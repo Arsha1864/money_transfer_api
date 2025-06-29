@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Bosh sahifa</title>
+</head>
+<body>
+    <h1>Xush kelibsiz, {{ request.user.username }}!</h1>
+    <p>Bu sizning admin logindan keyingi sahifangiz.</p>
+    <a href="{% url 'admin:index' %}">Admin panelga qaytish</a>
+</body>
+</html>
