@@ -48,13 +48,15 @@ class RegisterView(APIView):
         send_verification_sms(phone_number, code)
         return Response({"message": "Ro‘yxatdan o‘tildi. SMS kod yuborildi."}, status=status.HTTP_201_CREATED)
     
+        
+
 # 📌 Login (ochiq)
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('qwerty')
-        password = request.data.get('12345')
+        username = request.data.get('username')
+        password = request.data.get('password')
 
         user = authenticate(username=username, password=password)
         if user:
@@ -91,7 +93,7 @@ class VerifyCodeView(APIView):
     
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+          return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
