@@ -11,7 +11,7 @@ def home(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/accounts/', include('accounts.urls')),
+    path('api/', include('accounts.urls')),
     path("", home, name='home'),  # Asosiy URL uchun funksiya
     path('api/notifications/', include('notifications.urls')),
     path('api/transactions/', include('transactions.urls')),
