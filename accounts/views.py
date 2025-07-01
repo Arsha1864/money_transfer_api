@@ -53,10 +53,10 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+        username = request.data.get('qwerty')
+        password = request.data.get('12345')
 
-        user = authenticate(username='qwerty', password='12345')
+        user = authenticate(username=username, password=password)
         if user:
             if user.profile.is_verified:
                 token, _ = Token.objects.get_or_create(user=user)
