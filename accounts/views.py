@@ -37,16 +37,19 @@ class RegisterView(APIView):
 
         if CustomUser.objects.filter(phone_number=phone_number).exists():
             return Response({"error": "Telefon raqam ro‘yxatdan o‘tgan"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = User.objects.create_user(username=username, password=password)
-        user.phone_number = phone_number
+        
+        user = User.objects.create_user(username=username, password=password,phone_number=phone_number)
+         #user.phone_number = phone_number
         code = generate_verification_code()
         user.verification_code = code
         user.is_verified = False
         user.save()
 
         send_verification_sms(phone_number, code)
-        return Response({"message": "Ro‘yxatdan o‘tildi. SMS kod yuborildi."}, status=status.HTTP_201_CREATED)
+        return Response({"message": "Ro‘yxatdan o‘tildi. SMS kod yuborildi."}, status=status.HTTP_201_CREATED,)
+        #except Exception as e : 
+        #return Response ({'error': f'Ichki xatolik : {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
+            
     
         
 
