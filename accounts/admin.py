@@ -21,12 +21,14 @@ class CustomUserAdmin(BaseUserAdmin):
     list_filter = ('is_verified', 'is_staff', 'is_superuser')
     ordering = ('id',)
 
+    readonly_fields= ('last_lodin', 'date_joined')
+
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Shaxsiy maʼlumotlar', {'fields': ('first_name', 'last_name', 'phone_number')}),
         ('Ruxsatlar', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Muhim sanalar', {'fields': ('last_login', 'date_joined')}),
-        ('SMS KOD', {'fields': ('verification_code',)}),
+        ('SMS KOD', {'fields': ('verification_code','is_verified')}),
     )
 
     def has_delete_permission(self, request, obj=None):
