@@ -93,7 +93,22 @@ class VerifyCodeView(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "Foydalanuvchi topilmadi"}, status=status.HTTP_404_NOT_FOUND)
 
-    
+    # Enter Pin cod 
+class EnterPinView(APIView):
+    permission_classes = [IsAuthenticated]  # Token talab qilinadi
+
+    def post(self, request):
+        entered_pin = request.data.get('pin_code')
+
+        if not entered_pin:
+            return Response({'error': 'PIN kod kiritilmadi'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        if user.pin_code == entered_pin:
+            return Response({'message': 'PIN kod to‘g‘ri'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Noto‘g‘ri PIN kod'}, status=status.HTTP_401_UNAUTHORIZED)
+
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
           return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
