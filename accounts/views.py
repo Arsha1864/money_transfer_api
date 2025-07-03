@@ -65,7 +65,7 @@ class LoginView(APIView):
         if user:
             if user.is_verified:
                 token, _ = Token.objects.get_or_create(user=user)
-                return Response({"token": token.key}, status=status.HTTP_200_OK)
+                return Response({"token": token.key, 'phone_number':user.phone_number}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Telefon raqam tasdiqlanmagan"}, status=status.HTTP_403_FORBIDDEN)
         return Response({"error": "Noto‘g‘ri login yoki parol"}, status=status.HTTP_401_UNAUTHORIZED)
