@@ -82,11 +82,11 @@ class VerifyCodeView(APIView):
         code = request.data.get("code")
 
         try:
-            profile = CustomUser.objects.get(phone_number=phone)
-            if profile.verification_code == code:
-                profile.is_verified = True
-                profile.verification_code = "123456"
-                profile.save()
+            user= CustomUser.objects.get(phone_number=phone)
+            if user.verification_code == code:
+                user.is_verified = True
+                user.verification_code = "123456"
+                user.save()
                 return Response({"message": "Telefon tasdiqlandi"}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Kod noto‘g‘ri"}, status=status.HTTP_400_BAD_REQUEST)
