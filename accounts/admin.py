@@ -21,7 +21,7 @@ class CustomUserAdmin(BaseUserAdmin):
     list_filter = ('is_verified', 'is_staff', 'is_superuser')
     ordering = ('id',)
 
-    readonly_fields= ('last_lodin', 'date_joined')
+    readonly_fields= ('last_login', 'date_joined')
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
