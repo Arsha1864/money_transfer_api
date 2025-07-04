@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from django.db import transaction
+from card.models import Card
 from .models import (
     SubscriptionTransaction,
     TransferTransaction,
-    Card,
     Transaction,
     QRToken,
     NFCTransaction,
