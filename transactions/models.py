@@ -11,6 +11,7 @@ class Card(models.Model):
     card_type = models.CharField(max_length=10, choices=[("UzCard", "UzCard"), ("Humo", "Humo")])
     is_blocked = models.BooleanField(default=False)
     pin_code = models.CharField(max_length=6, default='12345')
+    related_name='transaction_cards'
 
     def __str__(self):
         return f"{self.card_number} - {self.owner.phone_number}"

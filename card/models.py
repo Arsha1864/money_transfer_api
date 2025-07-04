@@ -6,7 +6,7 @@ class Card(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='account_cards'
+        related_name='cards'
     )
     card_number = models.CharField(max_length=16, unique=True)
     holder_name = models.CharField(max_length=100)

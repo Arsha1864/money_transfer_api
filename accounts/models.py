@@ -91,7 +91,7 @@ class Card(models.Model):
     sms_code = models.CharField(max_length=6, default='123456')
     is_verified = models.BooleanField(default=False)
     verified_at = models.DateTimeField(null=True, blank=True)
-    related_name='transaction_cards'
+    related_name='account_cards'
 
     def str(self):
         return f"{self.number} - {self.owner}"
