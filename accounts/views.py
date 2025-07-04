@@ -14,14 +14,13 @@ from .serializers import FeedbackSerializer
 from .models import Notification
 from .serializers import NotificationSerializer
 from .models import Feedback  # type: ignore
-from .sms_service import send_verification_sms, generate_verification_code, send_new_password_sms
+from .sms_service import SMSService
 from accounts.models import CustomUser
 from django.contrib.auth.models import User
 import string
 import random
 from .models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
-from .sms_service import send_sms
 User = get_user_model()
 
 # 📌 Register (ochiq)
@@ -42,12 +41,12 @@ class RegisterView(APIView):
         
         user = User.objects.create_user(username=username, password=password,phone_number=phone_number)
          #user.phone_number = phone_number
-        code = generate_verification_code()
+        code = SMSService()
         user.verification_code = code
         user.is_verified = False
         user.save()
 
-        send_verification_sms(phone_number, code)
+        SMSService(phone_number, code)
         return Response({"message": "Ro‘yxatdan o‘tildi. SMS kod yuborildi."}, status=status.HTTP_201_CREATED,)
         #except Exception as e : 
         #return Response ({'error': f'Ichki xatolik : {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
@@ -150,7 +149,7 @@ class ResendCardSmsView(APIView):
             card.save()
 
             # SMS yuborish funksiyasi — sozlaganingizga qarab alohida yoziladi
-            send_sms(card.owner.phone_number, f"Tasdiqlash kodi: {new_code}")
+            SMSService(card.owner.phone_number, f"Tasdiqlash kodi: {new_code}")
 
             return Response({"success": True, "message": "Kod qayta yuborildi."}, status=200)
 
@@ -193,7 +192,7 @@ class ForgotPasswordView(APIView):
             user.set_password(new_password)
             user.save()
 
-            send_new_password_sms(phone, new_password)
+            SMSService(phone, new_password)
             return Response({"message": "Yangi parol yuborildi"}, status=status.HTTP_200_OK)
         except CustomUser.DoesNotExist:
             return Response({"error": "Telefon raqam topilmadi"}, status=status.HTTP_404_NOT_FOUND)
