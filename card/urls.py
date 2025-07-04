@@ -1,7 +1,6 @@
 from django.urls import path
-from .views import CardCreateView
-from .views import resend_card_sms
-from .views import CardListView, VerifyCardSmsView, ResendCardSmsView
+from .views import CardCreateView,CardListView, VerifyCardSmsView, ResendCardSmsView
+
 urlpatterns = [
     path('cards/add/', CardCreateView.as_view(), name='add-card'),
     path('cards/', CardListView.as_view(), name='card-list'),
