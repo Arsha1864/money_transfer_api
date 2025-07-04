@@ -19,7 +19,7 @@ from accounts.models import CustomUser
 from django.contrib.auth.models import User
 import string
 import random
-from .models import Card  # <-- sizning karta model nomi
+from card.models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
 User = get_user_model()
 
