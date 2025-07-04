@@ -13,7 +13,7 @@ from .views import (
     FeedbackListView,
     NotificationListView,
     MarkNotificationReadView,
-    EnterPinView,
+    EnterPinView,VerifyCardSmsView, ResendCardSmsView
 )
 urlpatterns = [
     path('', UserCreateAPIView.as_view(), name='user-list'),
@@ -33,4 +33,6 @@ urlpatterns = [
     path('notifications/', NotificationListView.as_view(), name='list_notifications'),
     path('notifications/<int:pk>/mark-read/', MarkNotificationReadView.as_view(), name='mark_notification_read'),
     
+    path('verify_card_sms/', VerifyCardSmsView.as_view()),
+    path('resend_card_sms/', ResendCardSmsView.as_view()),
 ]

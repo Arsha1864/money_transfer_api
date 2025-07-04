@@ -19,7 +19,9 @@ from accounts.models import CustomUser
 from django.contrib.auth.models import User
 import string
 import random
-
+from .models import Card  # <-- sizning karta model nomi
+from django.utils import timezone
+from .sms_service import send_sms
 User = get_user_model()
 
 # 📌 Register (ochiq)
@@ -93,7 +95,72 @@ class VerifyCodeView(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "Foydalanuvchi topilmadi"}, status=status.HTTP_404_NOT_FOUND)
 
-    # Enter Pin cod 
+# views.py
+class VerifyCardSmsView(APIView):
+    def post(self, request):
+        card_number = request.data.get("card_number")
+        code = request.data.get("code")
+
+        if not card_number or not code:
+            return Response(
+                {"error": "Karta raqami va kod talab qilinadi."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            card = Card.objects.get(number=card_number)
+
+            if card.sms_code != code:
+                return Response(
+                    {"error": "Kod noto‘g‘ri."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            card.is_verified = True
+            card.sms_code = "123456"  # Keyinchalik tasodifiy kod generatsiya qiling
+            card.verified_at = timezone.now()
+            card.save()
+
+            return Response({"message": "Karta tasdiqlandi."}, status=status.HTTP_200_OK)
+
+        except Card.DoesNotExist:
+            return Response(
+                {"error": "Karta topilmadi."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+  # <-- o'zingizdagi sms yuboruvchi funksiya
+
+class ResendCardSmsView(APIView):
+    def post(self, request):
+        card_number = request.data.get("card_number")
+
+        if not card_number:
+            return Response(
+                {"error": "Karta raqami talab qilinadi."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            card = Card.objects.get(number=card_number)
+
+            new_code = str(random.randint(100000, 999999))
+            card.sms_code = new_code
+            card.save()
+
+            # SMS yuborish funksiyasi — sozlaganingizga qarab alohida yoziladi
+            send_sms(card.owner.phone_number, f"Tasdiqlash kodi: {new_code}")
+
+            return Response({"success": True, "message": "Kod qayta yuborildi."}, status=200)
+
+        except Card.DoesNotExist:
+            return Response(
+                {"error": "Karta topilmadi."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    # Enter Pin cod
 class EnterPinView(APIView):
     permission_classes = [IsAuthenticated]  # Token talab qilinadi
 

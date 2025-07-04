@@ -83,3 +83,14 @@ class VerificationCode(models.Model):
 
     def str(self):
         return f"{self.phone} - {self.code}"
+    
+    # models.py
+class Card(models.Model):
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    number = models.CharField(max_length=16, unique=True)
+    sms_code = models.CharField(max_length=6, default='123456')
+    is_verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+    def str(self):
+        return f"{self.number} - {self.owner}"
