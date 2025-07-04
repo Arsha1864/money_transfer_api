@@ -9,3 +9,19 @@ class CardSerializer(serializers.ModelSerializer):
             'balance', 'is_active', 'is_primary', 'created_at'
         ]
         read_only_fields = ['id', 'balance', 'created_at']
+
+
+class CardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Card
+        fields = [
+            'id',
+            'card_number',
+            'holder_name',
+            'expiry_date',
+            'balance',
+            'is_active',
+            'is_primary',
+            'created_at',
+        ]
+        

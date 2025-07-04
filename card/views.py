@@ -11,6 +11,8 @@ from rest_framework import status
 from accounts.models import VerificationCode  # SMS kod modeli (agar mavjud bo‘lsa)
 from accounts.sms_service import send_sms_eskiz  # SMS yuborish funksiyasi
 
+  # sizning Card model nomingiz
+ 
 class CardCreateView(generics.CreateAPIView):
     queryset = Card.objects.all()
     serializer_class = CardSerializer
@@ -50,3 +52,12 @@ def resend_card_sms(request):
     send_sms_eskiz(phone=card.owner.phone_number, code=code)
 
     return Response({"message": "Tasdiqlash kodi yuborildi."}, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_cards(request):
+    cards = Card.objects.filter(user=request.user)
+    serializer = CardSerializer(cards, many=True)
+    return Response(serializer.data)
