@@ -1,20 +1,9 @@
 from django.db import models
 from django.conf import settings
-
+from card.models import Card
 
 User = settings.AUTH_USER_MODEL
 
-class Card(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    card_number = models.CharField(max_length=16, unique=True)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    card_type = models.CharField(max_length=10, choices=[("UzCard", "UzCard"), ("Humo", "Humo")])
-    is_blocked = models.BooleanField(default=False)
-    pin_code = models.CharField(max_length=6, default='12345')
-    related_name='transaction_cards'
-
-    def __str__(self):
-        return f"{self.card_number} - {self.owner.phone_number}"
 
 
 class TransferTransaction(models.Model):
@@ -48,16 +37,7 @@ class SubscriptionTransaction(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.amount} so'm"
-    
- # class ServicePayment(models.Model):
-     # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-     # service_name = models.CharField(max_length=100)  # Elektr, Suv, Internet
-    #  account_number = models.CharField(max_length=50)  # hisob raqami yoki abonent ID
-    #  amount = models.DecimalField(max_digits=12, decimal_places=2)
-    #  date = models.DateTimeField(auto_now_add=True)
-
-    #  def str(self):
-        #  return f"{self.service_name} - {self.account_number} - {self.amount}"
+ 
 
 class ServicePayment(models.Model):
     SERVICE_CHOICES = [

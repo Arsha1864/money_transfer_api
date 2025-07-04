@@ -15,10 +15,10 @@ from django.db.models import Sum
 from services_api.bank_api import pay_with_qr  # Soxta API funksiyasi
 from services_api.bank_api import transfer_funds  # Shu yerga import
 
-
+from card.models import Card
 from .models import (
     TransferTransaction, SubscriptionTransaction,MobilePayment,TransferProfitLog,
-    Card, QRToken, Transaction,NFCTransaction, ServicePayment
+     QRToken, Transaction,NFCTransaction, ServicePayment
 )
 from .serializers import (
     TransferSerializer, SubscriptionTransactionSerializer,NFCTransactionSerializer, ServicePaymentSerializer,
