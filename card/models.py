@@ -16,6 +16,7 @@ class Card(models.Model):
     is_active = models.BooleanField(default=True)
     is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    
 
     def str(self):
         return f"{self.card_number} ({self.user.username})"

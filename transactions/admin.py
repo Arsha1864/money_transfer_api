@@ -10,12 +10,12 @@ from .models import (
     ServicePayment,TransferProfitLog
 )
 
+
 @admin.register(Card)
 class CardAdmin(admin.ModelAdmin):
-    list_display = ('card_number', 'owner', 'balance', 'card_type', 'is_blocked')
-    search_fields = ('card_number', 'owner__phone_number')
-    list_filter = ('is_blocked', 'card_type')
-
+    list_display = ['id', 'user', 'card_number', 'holder_name', 'balance', 'is_active', 'is_primary', 'created_at']
+    list_filter = ['is_active', 'is_primary']
+    search_fields = ['card_number', 'user__username']
 
 @admin.register(QRToken)
 class QRTokenAdmin(admin.ModelAdmin):
