@@ -1,6 +1,6 @@
 from django.contrib import admin
+from card.models import Card
 from .models import (
-    Card,
     QRToken,
     Transaction,
     TransferTransaction,
