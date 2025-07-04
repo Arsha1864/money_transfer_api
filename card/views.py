@@ -3,13 +3,12 @@ from rest_framework import generics, permissions
 from .models import Card
 from .serializers import CardSerializer
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Card, VerificationCode
-  
-from accounts.sms_service import send_sms_eskiz  
+from .models import Card
+from accounts.models import  VerificationCode
+from accounts.sms_service import SMSService 
 import random
   # sizning Card model nomingiz
  
@@ -59,7 +58,7 @@ class ResendCardSmsView(APIView):
         )
 
         # SMS yuborish
-        send_sms_eskiz(phone=card.user.phone_number, code=code)
+        SMSService(phone=card.user.phone_number, code=code)
 
         return Response({"success": True, "message": "Tasdiqlash kodi yuborildi."}, status=status.HTTP_200_OK)
     
