@@ -16,5 +16,5 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls')),
     path('api/transactions/', include('transactions.urls')),
     path('api/payments/', include('payments.urls')),
-    path('api/card/', include('card.urls')),
+    path('api/', include('card.urls')),
 ]
