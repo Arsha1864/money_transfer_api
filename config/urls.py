@@ -13,8 +13,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('accounts.urls')),
     path("", home, name='home'),  # Asosiy URL uchun funksiya
-    path('api/notifications/', include('notifications.urls')),
-    path('api/transactions/', include('transactions.urls')),
-    path('api/payments/', include('payments.urls')),
+    path('api/', include('notifications.urls')),
+    path('api/', include('transactions.urls')),
+    path('api/', include('payments.urls')),
     path('api/', include('card.urls')),
 ]
