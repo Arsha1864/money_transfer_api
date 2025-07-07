@@ -15,8 +15,8 @@ urlpatterns = [
     path('pay/nfc/', NFCPaymentView.as_view(), name='nfc-pay'),
     path('service-payments/', ServicePaymentListCreateAPIView.as_view(), name='service-payments'),
     path('mobile-payments/', MobilePaymentListCreateAPIView.as_view(), name='mobile-payments'),
-    path('api/transfer/', CreateTransferTransactionView.as_view(), name='transfer'),
-    path('api/profit/statistics/', ProfitStatisticsView.as_view(), name='profit-statistics'),
-    path('api/payment/mobile/', MobilePaymentView.as_view(), name='mobile-payment'),
-    path('api/payment/service/', ServicePaymentView.as_view(), name='service-payment'),
+    path('transfer/', CreateTransferTransactionView.as_view(), name='transfer'),
+    path('profit/statistics/', ProfitStatisticsView.as_view(), name='profit-statistics'),
+    path('payment/mobile/', MobilePaymentView.as_view(), name='mobile-payment'),
+    path('payment/service/', ServicePaymentView.as_view(), name='service-payment'),
 ]
