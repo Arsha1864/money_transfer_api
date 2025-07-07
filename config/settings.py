@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'transactions',
     'payments',
     'card',
-    'bank_api',
+    
 ]
 
 MIDDLEWARE = [
