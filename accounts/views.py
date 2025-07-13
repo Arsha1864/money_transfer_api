@@ -209,6 +209,12 @@ class ForgotPasswordView(APIView):
             return Response({"error": "Telefon raqam topilmadi"}, status=status.HTTP_404_NOT_FOUND)
 
 # 📌 Set PIN (faqat login bo‘lgan foydalanuvchi)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.hashers import make_password
+from rest_framework import status
+
 class SetOrUpdatePinView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -218,11 +224,9 @@ class SetOrUpdatePinView(APIView):
         if not pin or len(pin) != 4 or not pin.isdigit():
             return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
 
-        profile = request.user.profile
-
-        # PIN'ni xeshlab saqlaymiz (yangi bo‘lsa ham, eski bo‘lsa ham)
-        profile.pin_hash = make_password(pin)
-        profile.save()
+        user = request.user
+        user.pin_code = make_password(pin)  # shifrlab saqlash
+        user.save()
 
         return Response({
             "message": "PIN muvaffaqiyatli saqlandi yoki yangilandi"
