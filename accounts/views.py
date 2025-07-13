@@ -214,17 +214,17 @@ class SetOrUpdatePinView(APIView):
 
     def post(self, request):
         pin = request.data.get('pin')
+        biometric = request.data.get('biometric', False)
 
         if not pin or len(pin) != 4 or not pin.isdigit():
             return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
 
         user = request.user
-        user.pin_code = make_password(pin)  # shifrlab saqlash
+        user.pin_code = make_password(pin)
+        user.has_fingerprint_enabled = biometric
         user.save()
 
-        return Response({
-            "message": "PIN muvaffaqiyatli saqlandi yoki yangilandi"
-        }, status=status.HTTP_200_OK)
+        return Response({"success": True, "message": "PIN saqlandi"}, status=200)
     
 # 📌 Change Password (faqat login qilgan foydalanuvchi)
 class ChangePasswordAPIView(APIView):
