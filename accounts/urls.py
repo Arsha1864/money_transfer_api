@@ -13,7 +13,10 @@ from .views import (
     FeedbackListView,
     NotificationListView,
     MarkNotificationReadView,
-    EnterPinView,VerifyCardSmsView, ResendCardSmsView
+    EnterPinView,
+    VerifyCardSmsView, 
+    ResendCardSmsView,
+    PinStatusAPIView,
 )
 urlpatterns = [
     path('', UserCreateAPIView.as_view(), name='user-list'),
@@ -21,9 +24,10 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('verify/', VerifyCodeView.as_view(), name='verify'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
-    path('set_pin/', SetOrUpdatePinView.as_view()),
     path('change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
+     path('set_pin/', SetOrUpdatePinView.as_view()),
     path('enter-pin/', EnterPinView.as_view(), name='enter-pin'),
+    path('user/pin-status/', PinStatusAPIView.as_view(), name='pin-status'),
     path('custom-admin/', dashboard, name='custom_dashboard'),
     # Feedback endpoints
     path('feedback/', FeedbackCreateView.as_view(), name='create_feedback'),
@@ -35,4 +39,5 @@ urlpatterns = [
     
     path('verify_card_sms/', VerifyCardSmsView.as_view()),
     path('resend_card_sms/', ResendCardSmsView.as_view()),
+    
 ]

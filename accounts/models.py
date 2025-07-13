@@ -31,6 +31,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     pin_code = models.CharField(max_length=128, blank=True, null=True)  # SHIFRLANGAN pin
+    has_fingerprint_enabled =models.BooleanField(default=False)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     verification_code = models.CharField(max_length=6, blank=True, null=True)

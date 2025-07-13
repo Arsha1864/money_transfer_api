@@ -161,6 +161,15 @@ class ResendCardSmsView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+
+class PinStatusAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({"has_pin": bool(user.pin_code)})
+
+
     # Enter Pin cod
 class EnterPinView(APIView):
     permission_classes = [IsAuthenticated]  # Token talab qilinadi
