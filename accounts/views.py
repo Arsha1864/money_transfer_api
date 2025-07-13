@@ -174,14 +174,14 @@ class PinStatusAPIView(APIView):
 
 
     # Enter Pin cod
-
 class EnterPinView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
         pin = request.data.get('pin')
-        biometric = request.data.get('biometric', False)
+        biometric_raw = request.data.get('biometric', False)
+        biometric = str(biometric_raw).lower() == 'true'
 
         # 1. Biometrik orqali kirish holati
         if biometric:
@@ -211,6 +211,8 @@ class EnterPinView(APIView):
             return Response({
                 "error": "PIN noto‘g‘ri"
             }, status=status.HTTP_403_FORBIDDEN)
+
+    
 
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
