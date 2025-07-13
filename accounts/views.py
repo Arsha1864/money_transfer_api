@@ -21,8 +21,11 @@ import string
 import random
 from card.models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password,check_password
+
 User = get_user_model()
+
+
 
 
 # 📌 Register (ochiq)
@@ -171,21 +174,25 @@ class PinStatusAPIView(APIView):
 
 
     # Enter Pin cod
+
 class EnterPinView(APIView):
-    permission_classes = [IsAuthenticated]  # Token talab qilinadi
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        entered_pin = request.data.get('pin_code')
+        input_pin = request.data.get('pin')
 
-        if not entered_pin:
-            return Response({'error': 'PIN kod kiritilmadi'}, status=status.HTTP_400_BAD_REQUEST)
+        if not input_pin or len(input_pin) != 4 or not input_pin.isdigit():
+            return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
 
         user = request.user
-        if user.pin_code == entered_pin:
-            return Response({'message': 'PIN kod to‘g‘ri'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Noto‘g‘ri PIN kod'}, status=status.HTTP_401_UNAUTHORIZED)
 
+        if not user.pin_code:
+            return Response({"error": "PIN hali o‘rnatilmagan"}, status=400)
+
+        if check_password(input_pin, user.pin_code):
+            return Response({"success": True, "message": "PIN to‘g‘ri"})
+        else:
+            return Response({"error": "PIN noto‘g‘ri"}, status=403)
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
           return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
