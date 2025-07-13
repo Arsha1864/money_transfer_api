@@ -45,7 +45,15 @@ class TransactionListView(APIView):
         serializer = TransferSerializer(transactions.order_by('-date'), many=True)
         return Response(serializer.data)
 
-
+    # Django DRF view'da:
+def get_queryset(self):
+    queryset = super().get_queryset()
+    tx_type = self.request.query_params.get('type')
+    if tx_type == 'income':
+        queryset = queryset.filter(is_incoming=True)
+    elif tx_type == 'expense':
+        queryset = queryset.filter(is_incoming=False)
+    return queryset
 
 
 class TransferAPIView(APIView):
