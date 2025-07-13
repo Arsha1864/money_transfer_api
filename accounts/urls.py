@@ -25,7 +25,7 @@ urlpatterns = [
     path('verify/', VerifyCodeView.as_view(), name='verify'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
-     path('set_pin/', SetOrUpdatePinView.as_view()),
+     path('set-pin/', SetOrUpdatePinView.as_view()),
     path('enter-pin/', EnterPinView.as_view(), name='enter-pin'),
     path('user/pin-status/', PinStatusAPIView.as_view(), name='pin-status'),
     path('custom-admin/', dashboard, name='custom_dashboard'),
