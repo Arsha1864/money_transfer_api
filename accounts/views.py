@@ -21,7 +21,9 @@ import string
 import random
 from card.models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 User = get_user_model()
+
 
 # 📌 Register (ochiq)
 # accounts/views.py
@@ -198,20 +200,25 @@ class ForgotPasswordView(APIView):
             return Response({"error": "Telefon raqam topilmadi"}, status=status.HTTP_404_NOT_FOUND)
 
 # 📌 Set PIN (faqat login bo‘lgan foydalanuvchi)
-class SetPinView(APIView):
+class SetOrUpdatePinView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        pin = request.data.get("pin")
+        pin = request.data.get('pin')
+
         if not pin or len(pin) != 4 or not pin.isdigit():
             return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
 
-        user = request.user
-        user.pin = pin
-        user.save()
+        profile = request.user.profile
 
-        return Response({"success": True, "message": "PIN muvaffaqiyatli saqlandi"})
+        # PIN'ni xeshlab saqlaymiz (yangi bo‘lsa ham, eski bo‘lsa ham)
+        profile.pin_hash = make_password(pin)
+        profile.save()
 
+        return Response({
+            "message": "PIN muvaffaqiyatli saqlandi yoki yangilandi"
+        }, status=status.HTTP_200_OK)
+    
 # 📌 Change Password (faqat login qilgan foydalanuvchi)
 class ChangePasswordAPIView(APIView):
     permission_classes = [IsAuthenticated]

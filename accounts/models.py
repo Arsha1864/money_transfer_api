@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
 
 
    # Custom user manager
@@ -21,13 +22,15 @@ class CustomUserManager(BaseUserManager):
 
 
    # Custom user modeli
+
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=150, unique=True, null=True, blank=True)  # Qo‘shildi
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
     phone_number = models.CharField(max_length=13, unique=True)
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    pin_code = models.CharField(max_length=6, blank=True, null=True)
+    pin_code = models.CharField(max_length=128, blank=True, null=True)  # SHIFRLANGAN pin
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     verification_code = models.CharField(max_length=6, blank=True, null=True)
@@ -35,13 +38,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(blank=True, null=True)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['phone_number']  # Superuser yaratishda talab qilinadi
+    REQUIRED_FIELDS = ['phone_number']
 
     objects = CustomUserManager()
 
-    def __str__(self):
+    def str(self):
         return self.username or self.phone_number
 
+    # PIN bilan ishlovchi maxsus methodlar:
+    def set_pin(self, raw_pin):
+        self.pin_code = make_password(raw_pin)
+
+    def check_pin(self, raw_pin):
+        return check_password(raw_pin, self.pin_code)
 
 # Feedback model
 class Feedback(models.Model):
