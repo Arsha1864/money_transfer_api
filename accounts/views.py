@@ -179,20 +179,39 @@ class EnterPinView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        input_pin = request.data.get('pin')
-
-        if not input_pin or len(input_pin) != 4 or not input_pin.isdigit():
-            return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
-
         user = request.user
+        pin = request.data.get('pin')
+        biometric = request.data.get('biometric', False)
+
+        # 1. Biometrik orqali kirish holati
+        if biometric:
+            if user.has_fingerprint_enabled:
+                return Response({
+                    "success": True,
+                    "message": "Barmoq izi orqali kirildi"
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "error": "Barmoq izi ruxsat etilmagan"
+                }, status=status.HTTP_403_FORBIDDEN)
+
+        # 2. PIN orqali kirish holati
+        if not pin or len(pin) != 4 or not pin.isdigit():
+            return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
 
         if not user.pin_code:
             return Response({"error": "PIN hali o‘rnatilmagan"}, status=400)
 
-        if check_password(input_pin, user.pin_code):
-            return Response({"success": True, "message": "PIN to‘g‘ri"})
+        if check_password(pin, user.pin_code):
+            return Response({
+                "success": True,
+                "message": "PIN orqali kirish muvaffaqiyatli"
+            }, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "PIN noto‘g‘ri"}, status=403)
+            return Response({
+                "error": "PIN noto‘g‘ri"
+            }, status=status.HTTP_403_FORBIDDEN)
+
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
           return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
