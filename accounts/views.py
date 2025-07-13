@@ -209,12 +209,6 @@ class ForgotPasswordView(APIView):
             return Response({"error": "Telefon raqam topilmadi"}, status=status.HTTP_404_NOT_FOUND)
 
 # 📌 Set PIN (faqat login bo‘lgan foydalanuvchi)
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.hashers import make_password
-from rest_framework import status
-
 class SetOrUpdatePinView(APIView):
     permission_classes = [IsAuthenticated]
 
