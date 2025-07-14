@@ -23,6 +23,9 @@ from card.models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password,check_password
 
+
+
+
 User = get_user_model()
 
 
@@ -165,23 +168,29 @@ class ResendCardSmsView(APIView):
             )
 
 
-class PinStatusAPIView(APIView):
+
+class PinStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        return Response({"has_pin": bool(user.pin_code)})
+        has_pin = bool(user.pin_code)  # PIN mavjudmi
+
+        return Response({
+            "has_pin": has_pin,
+            "biometric_enabled": user.has_fingerprint_enabled
+        }, status=status.HTTP_200_OK)
 
 
     # Enter Pin cod
+
 class EnterPinView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
         pin = request.data.get('pin')
-        biometric_raw = request.data.get('biometric', False)
-        biometric = str(biometric_raw).lower() == 'true'
+        biometric = request.data.get('biometric', False)
 
         # 1. Biometrik orqali kirish holati
         if biometric:
@@ -211,7 +220,7 @@ class EnterPinView(APIView):
             return Response({
                 "error": "PIN noto‘g‘ri"
             }, status=status.HTTP_403_FORBIDDEN)
-
+    
     
 
 # 📌 Forgot Password (ochiq)
@@ -237,6 +246,7 @@ class ForgotPasswordView(APIView):
             return Response({"error": "Telefon raqam topilmadi"}, status=status.HTTP_404_NOT_FOUND)
 
 # 📌 Set PIN (faqat login bo‘lgan foydalanuvchi)
+
 class SetOrUpdatePinView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -248,11 +258,14 @@ class SetOrUpdatePinView(APIView):
             return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
 
         user = request.user
-        user.pin_code = make_password(pin)
+        user.pin_code = make_password(pin)  # Shifrlash
         user.has_fingerprint_enabled = biometric
         user.save()
 
-        return Response({"success": True, "message": "PIN saqlandi"}, status=200)
+        return Response({
+            "success": True,
+            "message": "PIN muvaffaqiyatli saqlandi yoki yangilandi"
+        }, status=status.HTTP_200_OK)
     
 # 📌 Change Password (faqat login qilgan foydalanuvchi)
 class ChangePasswordAPIView(APIView):
