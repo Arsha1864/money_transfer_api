@@ -8,7 +8,7 @@ from .views import (
     VerifyCodeView,
     ForgotPasswordView,
     SetOrUpdatePinView,
-    ChangePasswordAPIView,
+    ChangePasswordView,
     FeedbackCreateView,
     FeedbackListView,
     NotificationListView,
@@ -17,6 +17,8 @@ from .views import (
     VerifyCardSmsView, 
     ResendCardSmsView,
     PinStatusView,
+    ChangePhoneView,
+    ChangePinView,
 )
 urlpatterns = [
     path('', UserCreateAPIView.as_view(), name='user-list'),
@@ -24,8 +26,12 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('verify/', VerifyCodeView.as_view(), name='verify'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
-    path('change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
-     path('set-pin/', SetOrUpdatePinView.as_view()),
+    
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('change-phone/', ChangePhoneView.as_view(), name='change-phone'),
+    path('change-pin/', ChangePinView.as_view(),name='change-pin'),
+
+    path('set-pin/', SetOrUpdatePinView.as_view()),
     path('enter-pin/', EnterPinView.as_view(), name='enter-pin'),
     path('pin-status/', PinStatusView.as_view(), name='pin-status'),
     path('custom-admin/', dashboard, name='custom_dashboard'),

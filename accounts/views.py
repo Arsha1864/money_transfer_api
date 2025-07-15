@@ -26,6 +26,7 @@ from django.contrib.auth.hashers import make_password,check_password
 
 
 
+
 User = get_user_model()
 
 
@@ -268,25 +269,73 @@ class SetOrUpdatePinView(APIView):
         }, status=status.HTTP_200_OK)
     
 # 📌 Change Password (faqat login qilgan foydalanuvchi)
-class ChangePasswordAPIView(APIView):
+class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
-        old_password = request.data.get("old_password")
-        new_password = request.data.get("new_password")
+        pin = request.data.get('pin')
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        if not pin or not check_password(pin, user.pin_code):
+            return Response({"error": "PIN noto‘g‘ri"}, status=403)
 
         if not old_password or not new_password:
-            return Response({"detail": "Ikkala parol ham kerak."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Parollar to‘liq kiritilmagan"}, status=400)
 
         if not user.check_password(old_password):
-            return Response({"detail": "Eski parol noto‘g‘ri."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Eski parol noto‘g‘ri"}, status=403)
+
         if len(new_password) < 6:
-            return Response({"detail": "Yangi parol juda qisqa (kamida 6 belgi)."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Yangi parol kamida 6 ta belgidan iborat bo‘lishi kerak"}, status=400)
 
         user.set_password(new_password)
         user.save()
-        return Response({"detail": "Parol muvaffaqiyatli o‘zgartirildi."}, status=status.HTTP_200_OK)
+
+        return Response({"success": True, "message": "Parol muvaffaqiyatli yangilandi"}, status=200)
+    
+# Change-Phone Number
+class ChangePhoneView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        phone = request.data.get('phone_number')
+        pin = request.data.get('pin') 
+        user = request.user
+
+        # PIN tekshiruv (agar kerak bo‘lsa)
+        if pin and not check_password(pin, user.pin_code):
+            return Response({"error": "PIN noto‘g‘ri"}, status=403)
+
+        if not phone or not phone.startswith('+998') or len(phone) != 13:
+            return Response({"error": "Telefon raqam noto‘g‘ri"}, status=400)
+
+        user.phone_number = phone
+        user.save()
+        return Response({"success": True, "message": "Telefon raqam yangilandi"}, status=200)
+
+# Pin Cod ni yangilash 
+class ChangePinView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        old_pin = request.data.get('old_pin')
+        new_pin = request.data.get('new_pin')
+        user = request.user
+
+        if not old_pin or not check_password(old_pin, user.pin_code):
+            return Response({"error": "Eski PIN noto‘g‘ri"}, status=400)
+
+        if not new_pin or len(new_pin) != 4 or not new_pin.isdigit():
+            return Response({"error": "Yangi PIN 4 xonali raqam bo‘lishi kerak"}, status=400)
+
+        user.pin_code = make_password(new_pin)
+        user.save()
+
+        return Response({"success": True, "message": "PIN muvaffaqiyatli o‘zgartirildi"}, status=200)
+
+
 
 # 📌 Generic User yaratish (ochiq)
 
