@@ -9,7 +9,7 @@ from rest_framework.decorators import permission_classes
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from rest_framework import generics, permissions
-from .models import Notification
+from .models import Notification,VerificationCode
 from .serializers import (
 NotificationSerializer,
 RegisterSerializer,
@@ -25,10 +25,8 @@ import random
 from card.models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password,check_password
-from accounts.sms_service import send_verification_sms
+from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
-
-
 
 
 User = get_user_model()
@@ -38,22 +36,33 @@ User = get_user_model()
 
 # 📌 Register (ochiq)
 
+
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            # Telefon raqamga SMS yuborish
-            send_verification_sms(user.phone)
+
+            # 🔐 Tasdiqlash kodi generatsiyasi
+            code = random.randint(100000, 999999)
+
+            # Kodni bazaga saqlash (agar kerak bo‘lsa)
+            VerificationCode.objects.create(user=user, code=code)
+
+            # ✅ SMS yuborish
+            SMSService(user.phone, code)
 
             # JWT token generatsiyasi
             refresh = RefreshToken.for_user(user)
+
             return Response({
                 "token": str(refresh.access_token),
                 "message": "Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi."
             }, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
         
 
 # 📌 Login (ochiq)

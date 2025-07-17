@@ -93,13 +93,20 @@ class SMSService:
         else:
             raise Exception("Hech qanday SMS provayder tanlanmagan!")
 
+ 
+    @classmethod
+    def send_sms(cls, phone, message):
+        # Bu yerda haqiqiy SMS API chaqirilsin
+        print(f"📲 SMS to {phone}: {message}")
+        return True  # Yoki API natijasiga qarab True/False qaytaring
+
     @classmethod
     def send_verification_sms(cls, phone, code):
         message = f"Sizning tasdiqlash kodingiz: {code}"
         success = cls.send_sms(phone, message)
         if not success:
             raise Exception("SMS yuborishda xatolik yuz berdi")
-
+        
     @classmethod
     def send_new_password_sms(cls, phone, password):
         message = f"Yangi parolingiz: {password}"
