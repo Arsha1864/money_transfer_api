@@ -4,14 +4,15 @@ from .models import Feedback, Notification
 from django.contrib.auth import authenticate
 
 from django.core.validators import RegexValidator
-from accounts.models import CustomUser
+from django.contrib.auth.models import User
 
+User = get_user_model()
 
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
+        model = User
         fields = ['id', 'phone']
 
 
@@ -37,7 +38,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = ['name', 'phone', 'password', 'confirm_password', 'is_agreed']
         extra_kwargs = {
             'password': {'write_only': True}
@@ -52,7 +53,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirm_password')
-        user = CustomUser.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
         return user
 
 
