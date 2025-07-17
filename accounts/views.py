@@ -31,12 +31,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
-
-
-
 # 📌 Register (ochiq)
-
-
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -45,47 +40,52 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
 
-            # 🔐 Tasdiqlash kodi generatsiyasi
+            # Tasdiqlash kodi
             code = random.randint(100000, 999999)
-
-            # Kodni bazaga saqlash (agar kerak bo‘lsa)
             VerificationCode.objects.create(user=user, code=code)
 
-            # ✅ SMS yuborish
-            SMSService(user.phone, code)
+            SMSService(user.phone_number, code)
 
-            # JWT token generatsiyasi
             refresh = RefreshToken.for_user(user)
 
             return Response({
-                "token": str(refresh.access_token),
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "message": "Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi."
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 # 📌 Login (ochiq)
+from rest_framework_simplejwt.tokens import RefreshToken
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('username')
+        phone = request.data.get('phone_number')
         password = request.data.get('password')
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(phone_number=phone, password=password)
+
         if user:
-            if user.is_verified:
-                token, _ = Token.objects.get_or_create(user=user)
-                return Response({"token": token.key, 'phone_number':user.phone_number}, status=status.HTTP_200_OK)
-            else:
+            if not user.is_verified:
                 return Response({"error": "Telefon raqam tasdiqlanmagan"}, status=status.HTTP_403_FORBIDDEN)
-        return Response({"error": "Noto‘g‘ri login yoki parol"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "phone_number": user.phone_number,
+            }, status=status.HTTP_200_OK)
+
+        return Response({"error": "Login yoki parol noto‘g‘ri"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 
 # 📌 Verify Code (ochiq)
-
 class VerifyCodeView(APIView):
     permission_classes = [AllowAny]
 
@@ -94,14 +94,16 @@ class VerifyCodeView(APIView):
         code = request.data.get("code")
 
         try:
-            user= CustomUser.objects.get(phone_number=phone)
-            if user.verification_code == code:
+            user = CustomUser.objects.get(phone_number=phone)
+            verification = VerificationCode.objects.filter(user=user).last()
+
+            if verification and verification.code == code:
                 user.is_verified = True
-                user.verification_code = "123456"
                 user.save()
                 return Response({"message": "Telefon tasdiqlandi"}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Kod noto‘g‘ri"}, status=status.HTTP_400_BAD_REQUEST)
+
         except CustomUser.DoesNotExist:
             return Response({"error": "Foydalanuvchi topilmadi"}, status=status.HTTP_404_NOT_FOUND)
 

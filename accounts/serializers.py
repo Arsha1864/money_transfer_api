@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Feedback, Notification
 from django.contrib.auth import authenticate
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 
@@ -96,4 +96,18 @@ class ChangePasswordSerializer(serializers.Serializer):
     def validate(self, data):
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError("Yangi parollar mos emas")
+        return data
+    
+
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        if not self.user.is_verified:
+            raise serializers.ValidationError("Telefon raqam tasdiqlanmagan.")
+        
+        data.update({
+            "phone_number": self.user.phone_number,
+        })
         return data
