@@ -25,7 +25,7 @@ import random
 from card.models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password,check_password
-from accounts.sms_service import send_verification_code
+from accounts.sms_service import send_verification_sms
 from rest_framework_simplejwt.tokens import RefreshToken 
 
 
@@ -44,7 +44,7 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             # Telefon raqamga SMS yuborish
-            send_verification_code(user.phone)
+            send_verification_sms(user.phone)
 
             # JWT token generatsiyasi
             refresh = RefreshToken.for_user(user)
