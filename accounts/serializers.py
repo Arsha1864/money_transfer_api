@@ -3,12 +3,15 @@ from django.contrib.auth import get_user_model
 from .models import Feedback, Notification
 from django.contrib.auth import authenticate
 
-User = get_user_model()
+from django.core.validators import RegexValidator
+from accounts.models import CustomUser
+
+
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['id', 'phone']
 
 
@@ -26,17 +29,32 @@ class FeedbackSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'created_at']
 
 
+
 class RegisterSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField(write_only=True)
+    phone = serializers.CharField(
+        validators=[RegexValidator(regex=r'^\+998\d{9}$', message="Telefon raqam formati noto‘g‘ri.")]
+    )
+
     class Meta:
-        model = User
-        fields = ['phone', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+        model = CustomUser
+        fields = ['name', 'phone', 'password', 'confirm_password', 'is_agreed']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Parollar mos emas.")
+        if not data.get('is_agreed', False):
+            raise serializers.ValidationError("Foydalanuvchi shartlarga rozilik bildirmagan.")
+        return data
 
     def create(self, validated_data):
-        return User.objects.create_user(
-            phone=validated_data['phone'],
-            password=validated_data['password']
-        )
+        validated_data.pop('confirm_password')
+        user = CustomUser.objects.create_user(**validated_data)
+        return user
+
 
 
 class LoginSerializer(serializers.Serializer):

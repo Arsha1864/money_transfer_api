@@ -9,10 +9,13 @@ from rest_framework.decorators import permission_classes
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from rest_framework import generics, permissions
-from .serializers import UserSerializer
-from .serializers import FeedbackSerializer
 from .models import Notification
-from .serializers import NotificationSerializer
+from .serializers import (
+NotificationSerializer,
+RegisterSerializer,
+FeedbackSerializer,
+UserSerializer,
+)
 from .models import Feedback  # type: ignore
 from .sms_service import SMSService
 from accounts.models import CustomUser
@@ -22,7 +25,8 @@ import random
 from card.models import Card  # <-- sizning karta model nomi
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password,check_password
-
+from accounts.sms_service import send_verification_code
+from rest_framework_simplejwt.tokens import RefreshToken 
 
 
 
@@ -33,33 +37,22 @@ User = get_user_model()
 
 
 # 📌 Register (ochiq)
-# accounts/views.py
+
 class RegisterView(APIView):
-    permission_classes = [AllowAny]
-
     def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        phone_number = request.data.get("phone_number")
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            # Telefon raqamga SMS yuborish
+            send_verification_code(user.phone)
 
-        if not username or not password or not phone_number:
-            return Response({"error": "Barcha maydonlar to‘ldirilishi kerak"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if CustomUser.objects.filter(phone_number=phone_number).exists():
-            return Response({"error": "Telefon raqam ro‘yxatdan o‘tgan"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = User.objects.create_user(username=username, password=password,phone_number=phone_number)
-         #user.phone_number = phone_number
-        code = SMSService()
-        user.verification_code = code
-        user.is_verified = False
-        user.save()
-
-        SMSService(phone_number, code)
-        return Response({"message": "Ro‘yxatdan o‘tildi. SMS kod yuborildi."}, status=status.HTTP_201_CREATED,)
-        #except Exception as e : 
-        #return Response ({'error': f'Ichki xatolik : {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
-            
+            # JWT token generatsiyasi
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "token": str(refresh.access_token),
+                "message": "Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi."
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
         
 
