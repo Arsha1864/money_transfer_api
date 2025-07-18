@@ -91,13 +91,13 @@ class VerifyCodeView(APIView):
 
     def post(self, request):
         phone = request.data.get("phone_number")
-        code = request.data.get("code")
+        code = request.data.get("123456")
 
         try:
             user = CustomUser.objects.get(phone_number=phone)
             verification = VerificationCode.objects.filter(user=user).last()
 
-            if verification and verification.code == '123456':
+            if verification and verification.code == code:
                 user.is_verified = True
                 user.save()
                 return Response({"message": "Telefon tasdiqlandi"}, status=status.HTTP_200_OK)
