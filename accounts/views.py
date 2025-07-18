@@ -86,7 +86,7 @@ class LoginView(APIView):
 
 
 # 📌 Verify Code (ochiq)
-from django.conf import settings
+
 
 class VerifyCodeView(APIView):
     permission_classes = [AllowAny]
