@@ -86,6 +86,8 @@ class LoginView(APIView):
 
 
 # 📌 Verify Code (ochiq)
+from django.conf import settings
+
 class VerifyCodeView(APIView):
     permission_classes = [AllowAny]
 
@@ -95,20 +97,26 @@ class VerifyCodeView(APIView):
 
         try:
             user = CustomUser.objects.get(phone_number=phone)
-           #  verification = VerificationCode.objects.filter(user=user).last()
 
-
-          #   if verification and verification.code == code:
-            if code == '123455':
+            # Faqat DEBUG holatda "123455" orqali tasdiqlansin
+            if settings.DEBUG and code == '123455':
                 user.is_verified = True
                 user.save()
                 return Response({"message": "Telefon tasdiqlandi"}, status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "Kod noto‘g‘ri"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Aks holda kodni VerificationCode modeli orqali tekshiradi
+            verification = VerificationCode.objects.filter(user=user).last()
+            if verification and verification.code == code:
+                user.is_verified = True
+                user.save()
+                return Response({"message": "Telefon tasdiqlandi"}, status=status.HTTP_200_OK)
+
+            return Response({"error": "Kod noto‘g‘ri"}, status=status.HTTP_400_BAD_REQUEST)
 
         except CustomUser.DoesNotExist:
             return Response({"error": "Foydalanuvchi topilmadi"}, status=status.HTTP_404_NOT_FOUND)
-
+        
+        
 # views.py
 class VerifyCardSmsView(APIView):
     def post(self, request):
