@@ -29,6 +29,8 @@ from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 
 
+
+
 User = get_user_model()
 
 # 📌 Register (ochiq)
@@ -270,10 +272,13 @@ class SetOrUpdatePinView(APIView):
         biometric = request.data.get('biometric', False)
 
         if not pin or len(pin) != 4 or not pin.isdigit():
-            return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
+            return Response(
+                {"error": "PIN 4 xonali raqam bo'lishi kerak"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = request.user
-        user.pin_code = make_password(pin)  # Shifrlash
+        user.pin_code = make_password(pin)  # PIN shifrlanadi
         user.has_fingerprint_enabled = biometric
         user.save()
 
