@@ -27,7 +27,7 @@ from django.utils import timezone
 from django.contrib.auth.hashers import make_password,check_password
 from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 
@@ -264,21 +264,26 @@ class ForgotPasswordView(APIView):
 
 # 📌 Set PIN (faqat login bo‘lgan foydalanuvchi)
 
+
 class SetOrUpdatePinView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         pin = request.data.get('pin')
         biometric = request.data.get('biometric', False)
 
+        # PIN validatsiyasi: 4 xonali raqam bo'lishi kerak
         if not pin or len(pin) != 4 or not pin.isdigit():
             return Response(
-                {"error": "PIN 4 xonali raqam bo'lishi kerak"},
+                {"error": "PIN faqat 4 xonali raqamlardan iborat bo'lishi kerak"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        user = request.user
-        user.pin_code = make_password(pin)  # PIN shifrlanadi
+        user: CustomUser = request.user  # JWT orqali aniqlangan foydalanuvchi
+
+        # PIN shifrlanib saqlanadi
+        user.pin_code = make_password(pin)
         user.has_fingerprint_enabled = biometric
         user.save()
 

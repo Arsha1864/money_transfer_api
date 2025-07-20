@@ -6,6 +6,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 
+
 User = get_user_model()
 
 
@@ -78,14 +79,21 @@ class ForgotPasswordSerializer(serializers.Serializer):
     phone = serializers.CharField()
 
 
-class SetPinSerializer(serializers.Serializer):
-    pin_code = serializers.CharField(max_length=6)
-    confirm_pin = serializers.CharField(max_length=6)
 
-    def validate(self, data):
-        if data['pin_code'] != data['confirm_pin']:
-            raise serializers.ValidationError("PIN kodlar mos emas")
-        return data
+class SetPinSerializer(serializers.Serializer):
+    pin = serializers.CharField(min_length=4, max_length=4)
+    biometric = serializers.BooleanField(default=False)
+
+    def validate_pin(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("PIN faqat raqamlardan iborat bo'lishi kerak.")
+        return value
+
+    def update_pin(self, user):
+        user.pin = self.validated_data['pin']
+        user.biometric_enabled = self.validated_data['biometric']
+        user.save()
+        return user
 
 
 class ChangePasswordSerializer(serializers.Serializer):
