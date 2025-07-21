@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os 
 import dj_database_url
 from dotenv import load_dotenv
+load_dotenv()
 from pathlib import Path
 from datetime import timedelta
 
-load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,28 +35,7 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 
-# Application definition
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    
-    'rest_framework',
-    'rest_framework_simplejwt',
- 
-
-    'accounts',
-    'notifications',
-    'transactions',
-    'payments',
-    'card',
-    
-]
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -76,7 +56,6 @@ TEMPLATES = [
     {
         'DIRS': [BASE_DIR / 'templates'],  # ← bu bo‘lsin
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
