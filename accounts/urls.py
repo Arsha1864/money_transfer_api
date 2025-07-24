@@ -1,8 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework_simplejwt.views import (
     TokenRefreshView,     # token yangilash
     TokenVerifyView       # tokenni tekshirish
 )
+from rest_framework.routers import DefaultRouter
+from .views import FeedbackViewSet
 from accounts.token import CustomTokenObtainPairView
 from .views import (
     dashboard,
@@ -13,8 +15,6 @@ from .views import (
     ForgotPasswordView,
     SetOrUpdatePinView,
     ChangePasswordView,
-    FeedbackCreateView,
-    FeedbackListView,
     NotificationListView,
     MarkNotificationReadView,
     EnterPinView,
@@ -23,8 +23,11 @@ from .views import (
     PinStatusView,
     ChangePhoneView,
     ChangePinView,
-    FeedbackViewSet,
+   
 )
+router = DefaultRouter()
+router.register(r'feedback', FeedbackViewSet, basename='feedback')
+
 
 urlpatterns = [
     path('', UserCreateAPIView.as_view(), name='user-list'),
@@ -43,8 +46,7 @@ urlpatterns = [
     path('custom-admin/', dashboard, name='custom_dashboard'),
 
     # Feedback
-    path('feedback/', FeedbackViewSet.as_view(), name='create_feedback'),
-    
+     path('', include(router.urls)),
 
     # Notification
     path('notifications/', NotificationListView.as_view(), name='list_notifications'),
@@ -58,3 +60,8 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]
+
+
+
+
+   
