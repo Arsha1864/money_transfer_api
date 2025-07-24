@@ -2,14 +2,13 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.timezone import now
-from datetime import timedelta
-from .models import Feedback, FeedbackReply, Notification
+
+from .models import Feedback, Notification
 from accounts.models import CustomUser
 User = get_user_model()
 
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import CustomUser
+
+
 
 
 @admin.register(CustomUser)
@@ -44,28 +43,17 @@ class CustomUserAdmin(BaseUserAdmin):
 
 
 
-class FeedbackReplyInline(admin.TabularInline):
-    model = FeedbackReply
-    extra = 1
-    readonly_fields = ['created_at']
-
-
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'short_message', 'created_at')
+    list_display = ('id', 'user', 'message_short', 'image', 'created_at')
     list_filter = ('created_at',)
-    search_fields = ('message', 'user__username')
+    search_fields = ('user__username', 'message')
+    readonly_fields = ('created_at',)
     ordering = ('-created_at',)
-    inlines = [FeedbackReplyInline]
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        seven_days_ago = now() - timedelta(days=7)
-        return qs.filter(created_at__gte=seven_days_ago)
-
-    def short_message(self, obj):
-        return obj.message[:50] + ('...' if len(obj.message) > 50 else '')
-    short_message.short_description = 'Fikr matni'
+    def message_short(self, obj):
+        return (obj.message[:50] + '...') if obj.message and len(obj.message) > 50 else obj.message
+    message_short.short_description = 'Message'
 
 
 @admin.register(Notification)

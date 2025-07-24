@@ -30,7 +30,6 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
 
 
-
 User = get_user_model()
 
 # 📌 Register (ochiq)
@@ -377,25 +376,20 @@ def home_page(request):
     return render(request, 'home.html')
 
 # Fikrlar ro‘yxati – faqat adminlar uchun
+
+
 class FeedbackViewSet(viewsets.ModelViewSet):
-    queryset = Feedback.objects.all()
+    queryset = Feedback.objects.all().order_by('created_at')
     serializer_class = FeedbackSerializer
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         user = self.request.user
-        return Feedback.objects.filter(sender=user) | Feedback.objects.filter(is_from_user=False)
+        return Feedback.objects.filter(user__in=[user, 1]).order_by('created_at')  # 1 — admin id
 
     def perform_create(self, serializer):
-        serializer.save(sender=self.request.user, is_from_user=True)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.sender != request.user:
-            return Response({"detail": "Faqat o'zingizning xabaringizni o'chira olasiz."},
-                            status=status.HTTP_403_FORBIDDEN)
-        return super().destroy(request, *args, **kwargs)
+        serializer.save(user=self.request.user)
     
 
 # 🔔 Foydalanuvchining barcha xabarnomalarini ko‘rsatish

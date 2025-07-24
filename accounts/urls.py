@@ -5,6 +5,9 @@ from rest_framework_simplejwt.views import (
 )
 from rest_framework.routers import DefaultRouter
 from .views import FeedbackViewSet
+
+
+
 from accounts.token import CustomTokenObtainPairView
 from .views import (
     dashboard,
@@ -27,6 +30,7 @@ from .views import (
 )
 router = DefaultRouter()
 router.register(r'feedback', FeedbackViewSet, basename='feedback')
+
 
 
 urlpatterns = [
@@ -60,6 +64,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]
+
 
 
 

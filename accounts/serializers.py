@@ -7,6 +7,7 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 
 
+
 User = get_user_model()
 
 
@@ -26,11 +27,17 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 
+
 class FeedbackSerializer(serializers.ModelSerializer):
+    from_user = serializers.SerializerMethodField()
+
     class Meta:
         model = Feedback
-        fields = ['id', 'sender', 'message', 'file', 'is_from_user', 'created_at']
-        read_only_fields = ['id', 'sender', 'is_from_user', 'created_at']
+        fields = ['id', 'message', 'image', 'created_at', 'from_user']
+
+    def get_from_user(self, obj):
+        request = self.context.get('request')
+        return obj.user == request.user
 
 
 class RegisterSerializer(serializers.ModelSerializer):

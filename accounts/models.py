@@ -4,7 +4,10 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 
-from django.contrib.auth import get_user_model
+
+
+
+
 
    # Custom user manager
 class CustomUserManager(BaseUserManager):
@@ -56,19 +59,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return check_password(raw_pin, self.pin_code)
 
 # Feedback model
+
+
 class Feedback(models.Model):
-    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_feedbacks')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='feedbacks',null=True,blank=True)
     message = models.TextField(blank=True, null=True)
-    file = models.FileField(upload_to='feedback_files/', null=True, blank=True)
-    is_from_user = models.BooleanField(default=True)
+    image = models.ImageField(upload_to='feedback_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        ordering = ['-created_at']
-
     def str(self):
-        return f"{'User' if self.is_from_user else 'Admin'}: {self.message[:30]}"
-
+        return f"{self.user.username} - {self.created_at}"
+    
 # Notification model
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
