@@ -14,6 +14,7 @@ NotificationSerializer,
 RegisterSerializer,
 FeedbackSerializer,
 UserSerializer,
+EnterPinSerializer,
 )
 from .models import Feedback  # type: ignore
 from .sms_service import SMSService
@@ -28,7 +29,6 @@ from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
-
 
 User = get_user_model()
 
@@ -200,43 +200,20 @@ class PinStatusView(APIView):
 
     # Enter Pin cod
 
+
 class EnterPinView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        user = request.user
-        pin = request.data.get('pin')
-        biometric = request.data.get('biometric', False)
-
-        # 1. Biometrik orqali kirish holati
-        if biometric:
-            if user.has_fingerprint_enabled:
-                return Response({
-                    "success": True,
-                    "message": "Barmoq izi orqali kirildi"
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                    "error": "Barmoq izi ruxsat etilmagan"
-                }, status=status.HTTP_403_FORBIDDEN)
-
-        # 2. PIN orqali kirish holati
-        if not pin or len(pin) != 4 or not pin.isdigit():
-            return Response({"error": "PIN 4 xonali raqam bo'lishi kerak"}, status=400)
-
-        if not user.pin_code:
-            return Response({"error": "PIN hali o‘rnatilmagan"}, status=400)
-
-        if check_password(pin, user.pin_code):
+        serializer = EnterPinSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            tokens = serializer.validated_data
             return Response({
-                "success": True,
-                "message": "PIN orqali kirish muvaffaqiyatli"
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response({
-                "error": "PIN noto‘g‘ri"
-            }, status=status.HTTP_403_FORBIDDEN)
-    
+                'success': True,
+                'access': tokens['access'],
+                'refresh': tokens['refresh']
+            })
+        return Response({'success': False, 'error': serializer.errors}, status=400)
     
 
 # 📌 Forgot Password (ochiq)
