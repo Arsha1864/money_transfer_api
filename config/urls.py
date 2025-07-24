@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
+
 
 def home(request):
     return HttpResponse("Bosh sahifa ishlayapti!")

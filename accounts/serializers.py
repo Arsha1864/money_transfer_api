@@ -24,12 +24,13 @@ class NotificationSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'user']
 
 
+
+
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ['id', 'user', 'message', 'created_at']
-        read_only_fields = ['user', 'created_at']
-
+        fields = ['id', 'sender', 'message', 'file', 'is_from_user', 'created_at']
+        read_only_fields = ['id', 'sender', 'is_from_user', 'created_at']
 
 
 class RegisterSerializer(serializers.ModelSerializer):

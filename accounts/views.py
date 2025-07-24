@@ -3,12 +3,11 @@ from rest_framework.response import Response  # type: ignore
 from rest_framework import status  # type: ignore
 from django.contrib.auth import authenticate  # type: ignore
 from django.contrib.auth import get_user_model  # type: ignore
-from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import permission_classes
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions ,viewsets
 from .models import Notification,VerificationCode
 from .serializers import (
 NotificationSerializer,
@@ -28,6 +27,7 @@ from django.contrib.auth.hashers import make_password,check_password
 from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 
@@ -60,7 +60,7 @@ class RegisterView(APIView):
 
 
 # 📌 Login (ochiq)
-from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -377,19 +377,26 @@ def home_page(request):
     return render(request, 'home.html')
 
 # Fikrlar ro‘yxati – faqat adminlar uchun
-class FeedbackCreateView(generics.CreateAPIView):
+class FeedbackViewSet(viewsets.ModelViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    permission_classes = [permissions.IsAuthenticated]  # faqat login bo'lganlar
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Feedback.objects.filter(sender=user) | Feedback.objects.filter(is_from_user=False)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(sender=self.request.user, is_from_user=True)
 
-
-class FeedbackListView(generics.ListAPIView):
-    queryset = Feedback.objects.all().order_by('-created_at')
-    serializer_class = FeedbackSerializer
-    permission_classes = [permissions.IsAdminUser]  # Faqat admin ko‘ra oladi
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.sender != request.user:
+            return Response({"detail": "Faqat o'zingizning xabaringizni o'chira olasiz."},
+                            status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+    
 
 # 🔔 Foydalanuvchining barcha xabarnomalarini ko‘rsatish
 class NotificationListView(generics.ListAPIView):

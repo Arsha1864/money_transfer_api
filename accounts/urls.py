@@ -23,6 +23,7 @@ from .views import (
     PinStatusView,
     ChangePhoneView,
     ChangePinView,
+    FeedbackViewSet,
 )
 
 urlpatterns = [
@@ -42,8 +43,8 @@ urlpatterns = [
     path('custom-admin/', dashboard, name='custom_dashboard'),
 
     # Feedback
-    path('feedback/', FeedbackCreateView.as_view(), name='create_feedback'),
-    path('feedback/list/', FeedbackListView.as_view(), name='list_feedback'),
+    path('feedback/', FeedbackViewSet.as_view(), name='create_feedback'),
+    
 
     # Notification
     path('notifications/', NotificationListView.as_view(), name='list_notifications'),

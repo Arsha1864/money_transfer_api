@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 
+from django.contrib.auth import get_user_model
 
    # Custom user manager
 class CustomUserManager(BaseUserManager):
@@ -56,23 +57,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 # Feedback model
 class Feedback(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-    message = models.TextField()
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_feedbacks')
+    message = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to='feedback_files/', null=True, blank=True)
+    is_from_user = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Fikr #{self.id} - {self.user.phone_number if self.user else 'Anonim'}"
+    class Meta:
+        ordering = ['-created_at']
 
-
-# Javob model
-class FeedbackReply(models.Model):
-    feedback = models.ForeignKey(Feedback, on_delete=models.CASCADE, related_name='replies')
-    reply_text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Javob: {self.reply_text[:30]}"
-
+    def str(self):
+        return f"{'User' if self.is_from_user else 'Admin'}: {self.message[:30]}"
 
 # Notification model
 class Notification(models.Model):
