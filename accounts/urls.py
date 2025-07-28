@@ -20,7 +20,7 @@ from .views import (
     ChangePasswordView,
     NotificationListView,
     MarkNotificationReadView,
-    EnterPinView,
+    EnterPinAPIView,
     VerifyCardSmsView, 
     ResendCardSmsView,
     PinStatusView,
@@ -45,7 +45,7 @@ urlpatterns = [
     path('change-pin/', ChangePinView.as_view(), name='change-pin'),
 
     path('set-pin/', SetOrUpdatePinView.as_view()),
-    path('enter-pin/', EnterPinView.as_view(), name='enter-pin'),
+    path('enter-pin/', EnterPinAPIView.as_view(), name='enter-pin'),
     path('pin-status/', PinStatusView.as_view(), name='pin-status'),
     path('custom-admin/', dashboard, name='custom_dashboard'),
 

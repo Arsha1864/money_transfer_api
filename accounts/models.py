@@ -42,21 +42,41 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     verification_code = models.CharField(max_length=6, blank=True, null=True)
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(blank=True, null=True)
+
+    # Yangi PIN fieldlar
+
+    pin_attempts = models.IntegerField(default=0) 
+    failed_cycles = models.IntegerField(default=0) 
+    blocked_until = models.DateTimeField(null=True, blank=True)
+
     
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['phone_number']
 
     objects = CustomUserManager()
+    
+def __str__(self):
+    return self.username or self.phone_number
 
-    def __str__(self):
-        return self.username or self.phone_number
+def set_pin(self, raw_pin):
+ self.pin_code
+ make_password(raw_pin)
 
-    # PIN bilan ishlovchi maxsus methodlar:
-    def set_pin(self, raw_pin):
-        self.pin_code = make_password(raw_pin)
+def check_pin(self, raw_pin):
+    return check_password(raw_pin,self.pin_code)
 
-    def check_pin(self, raw_pin):
-        return check_password(raw_pin, self.pin_code)
+
+def is_pin_blocked(self):
+    return self.blocked_until and self.blocked_until > timezone.now()
+
+def reset_pin_state(self):
+ self.pin_attempts = 0 
+ self.failed_cycles = 0 
+ self.blocked_until = None 
+ self.save()
+    
+
+
 
 # Feedback model
 

@@ -29,7 +29,11 @@ from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
+from datetime import timedelta
 
+
+
+from .serializers import EnterPinSerializer
 User = get_user_model()
 
 # 📌 Register (ochiq)
@@ -199,22 +203,56 @@ class PinStatusView(APIView):
 
 
     # Enter Pin cod
-
-
-class EnterPinView(APIView):
-    permission_classes = [AllowAny]
+class EnterPinAPIView(APIView):
+    permission_classes = [IsAuthenticated]  # useToken: false bo‘lsa bu chetlashtiriladi
 
     def post(self, request):
-        serializer = EnterPinSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            tokens = serializer.validated_data
+        user = request.user
+        serializer = EnterPinSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        now = timezone.now()
+
+        # 1. Bloklanganmi?
+        if user.is_pin_blocked():
             return Response({
-                'success': True,
-                'access': tokens['access'],
-                'refresh': tokens['refresh']
-            })
-        return Response({'success': False, 'error': serializer.errors}, status=400)
-    
+                "detail": "PIN 15 daqiqa bloklangan.",
+                "blocked_until": user.blocked_until
+            }, status=403)
+
+        pin = serializer.validated_data.get("pin")
+        fingerprint = serializer.validated_data.get("fingerprint")
+
+        # 2. PIN to‘g‘rimi?
+        if pin and user.check_pin(pin):
+            return self._return_tokens(user)
+
+        # 3. Barmoq izi?
+        if fingerprint and user.has_fingerprint_enabled and fingerprint == "valid":  # demo fingerprint
+            return self._return_tokens(user)
+
+        # 4. Xato PIN
+        user.pin_attempts += 1
+        if user.pin_attempts >= 3:
+            user.pin_attempts = 0
+            user.failed_cycles += 1
+            if user.failed_cycles >= 2:
+                return Response({
+                    "detail": "PIN 2 marta noto‘g‘ri kiritildi. Login sahifaga o‘ting.",
+                    "next": "login"
+                }, status=403)
+            user.blocked_until = now + timedelta(minutes=15)
+        user.save()
+
+        return Response({"detail": "Noto‘g‘ri PIN."}, status=401)
+
+    def _return_tokens(self, user):
+        refresh = RefreshToken.for_user(user)
+        user.reset_pin_state()
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
+        })
 
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
