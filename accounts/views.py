@@ -14,7 +14,7 @@ NotificationSerializer,
 RegisterSerializer,
 FeedbackSerializer,
 UserSerializer,
-EnterPinSerializer,
+
 )
 from .models import Feedback  # type: ignore
 from .sms_service import SMSService
@@ -29,11 +29,12 @@ from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
-from datetime import timedelta
+from django.utils.timezone import now, timedelta
+from django.core.cache import cache
 
+FAILED_PIN_LIMIT = 3
+PIN_LOCK_TIME = 15  # daqiqa
 
-
-from .serializers import EnterPinSerializer
 User = get_user_model()
 
 # 📌 Register (ochiq)
@@ -203,57 +204,43 @@ class PinStatusView(APIView):
 
 
     # Enter Pin cod
-class EnterPinAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # useToken: false bo‘lsa bu chetlashtiriladi
+
+class EnterPinView(APIView):
+    permission_classes = [permissions.AllowAny]  # yoki CustomPermission
 
     def post(self, request):
-        user = request.user
-        serializer = EnterPinSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        username = request.data.get('username')
+        pin = request.data.get('pin')
+        user = CustomUser.objects.filter(username=username).first()
 
-        now = timezone.now()
+        if not user:
+            return Response({'detail': 'User topilmadi'}, status=404)
 
-        # 1. Bloklanganmi?
-        if user.is_pin_blocked():
-            return Response({
-                "detail": "PIN 15 daqiqa bloklangan.",
-                "blocked_until": user.blocked_until
-            }, status=403)
+        # PIN bloklanganmi?
+        key = f"pin_attempts:{username}"
+        data = cache.get(key, {'count': 0, 'locked_until': None})
 
-        pin = serializer.validated_data.get("pin")
-        fingerprint = serializer.validated_data.get("fingerprint")
+        if data['locked_until'] and now() < data['locked_until']:
+            return Response({'detail': 'PIN bloklangan. Keyinroq urinib ko‘ring.'}, status=423)
 
-        # 2. PIN to‘g‘rimi?
-        if pin and user.check_pin(pin):
-            return self._return_tokens(user)
+        if not user.check_pin(pin):
+            data['count'] += 1
+            if data['count'] >= FAILED_PIN_LIMIT:
+                data['locked_until'] = now() + timedelta(minutes=PIN_LOCK_TIME)
+            cache.set(key, data, timeout=60 * 60)
+            return Response({'detail': 'Noto‘g‘ri PIN'}, status=401)
 
-        # 3. Barmoq izi?
-        if fingerprint and user.has_fingerprint_enabled and fingerprint == "valid":  # demo fingerprint
-            return self._return_tokens(user)
+        # Urinishlarni tozalash
+        cache.delete(key)
 
-        # 4. Xato PIN
-        user.pin_attempts += 1
-        if user.pin_attempts >= 3:
-            user.pin_attempts = 0
-            user.failed_cycles += 1
-            if user.failed_cycles >= 2:
-                return Response({
-                    "detail": "PIN 2 marta noto‘g‘ri kiritildi. Login sahifaga o‘ting.",
-                    "next": "login"
-                }, status=403)
-            user.blocked_until = now + timedelta(minutes=15)
-        user.save()
-
-        return Response({"detail": "Noto‘g‘ri PIN."}, status=401)
-
-    def _return_tokens(self, user):
+        # PIN to‘g‘ri bo‘lsa token beriladi
         refresh = RefreshToken.for_user(user)
-        user.reset_pin_state()
         return Response({
-            "access": str(refresh.access_token),
-            "refresh": str(refresh)
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'fingerprint_enabled': user.has_fingerprint_enabled
         })
-
+    
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
           return ''.join(random.choices(string.ascii_letters + string.digits, k=length))

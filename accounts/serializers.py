@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.validators import RegexValidator
 from rest_framework_simplejwt.tokens import RefreshToken
+
 User = get_user_model()
 
 
@@ -129,9 +130,38 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class EnterPinSerializer(serializers.Serializer):
     pin = serializers.CharField(required=False)
-    fingerprint = serializers.CharField(required=False)
+    biometric = serializers.BooleanField(required=False)
 
-    def validate(self, data):
-        if not data.get('pin') and not data.get('fingerprint'):
-            raise serializers.ValidationError("PIN yoki barmoq izi kerak.")
-        return data
+    def validate(self, attrs):
+        request = self.context['request']
+        user = request.user if request.user.is_authenticated else None
+
+        pin = attrs.get('pin')
+        biometric = attrs.get('biometric')
+
+        if not pin and not biometric:
+            raise serializers.ValidationError("PIN yoki biometric kerak")
+
+        # Biometric login
+        if biometric:
+            if not user or not user.has_fingerprint_enabled:
+                raise serializers.ValidationError("Biometric login yoqilmagan.")
+            return self._generate_tokens(user)
+
+        # PIN bilan login
+        if pin:
+            try:
+                user = CustomUser.objects.get(pin_code=pin)
+            except CustomUser.DoesNotExist:
+                raise serializers.ValidationError("PIN noto‘g‘ri.")
+            return self._generate_tokens(user)
+
+        raise serializers.ValidationError("Xatolik yuz berdi.")
+
+    def _generate_tokens(self, user):
+        refresh = RefreshToken.for_user(user)
+        return {
+            'user': user,
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+        }
