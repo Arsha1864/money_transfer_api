@@ -206,18 +206,21 @@ class PinStatusView(APIView):
     # Enter Pin cod
 
 class EnterPinView(APIView):
-    permission_classes = [permissions.AllowAny]  # yoki CustomPermission
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        username = request.data.get('username')
+        phone = request.data.get('phone')
         pin = request.data.get('pin')
-        user = CustomUser.objects.filter(username=username).first()
+
+        if not phone or not pin:
+            return Response({'detail': 'Telefon raqam yoki PIN yo‘q'}, status=400)
+
+        user = CustomUser.objects.filter(phone=phone, has_fingerprint_enabled=True).first()
 
         if not user:
-            return Response({'detail': 'User topilmadi'}, status=404)
+            return Response({'detail': 'Foydalanuvchi topilmadi yoki fingerprint yoqilmagan'}, status=404)
 
-        # PIN bloklanganmi?
-        key = f"pin_attempts:{username}"
+        key = f"pin_attempts:{user.id}"
         data = cache.get(key, {'count': 0, 'locked_until': None})
 
         if data['locked_until'] and now() < data['locked_until']:
@@ -230,10 +233,8 @@ class EnterPinView(APIView):
             cache.set(key, data, timeout=60 * 60)
             return Response({'detail': 'Noto‘g‘ri PIN'}, status=401)
 
-        # Urinishlarni tozalash
         cache.delete(key)
 
-        # PIN to‘g‘ri bo‘lsa token beriladi
         refresh = RefreshToken.for_user(user)
         return Response({
             'access': str(refresh.access_token),
