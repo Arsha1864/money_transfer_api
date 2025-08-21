@@ -209,25 +209,27 @@ class EnterPinView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        phone = request.data.get('phone_number') or request.data.get('phone_number')
+        phone = request.data.get('phone_number')
         pin = request.data.get('pin')
 
         if not phone or not pin:
             return Response({'detail': 'Telefon raqam yoki PIN yo‘q'}, status=400)
 
-        user = CustomUser.objects.filter(phone=phone, has_fingerprint_enabled=True).first()
-
+        user = CustomUser.objects.filter(phone=phone).first()
         if not user:
-            return Response({'detail': 'Foydalanuvchi topilmadi yoki fingerprint yoqilmagan'}, status=404)
+            return Response({'detail': 'Foydalanuvchi topilmadi'}, status=404)
+
+        if not user.has_fingerprint_enabled:
+            return Response({'detail': 'Fingerprint yoqilmagan'}, status=403)
 
         key = f"pin_attempts:{user.id}"
         data = cache.get(key, {'count': 0, 'locked_until': None})
 
-        if data['locked_until'] and now() < data['locked_until']:
+        if data.get('locked_until') and now() < data['locked_until']:
             return Response({'detail': 'PIN bloklangan. Keyinroq urinib ko‘ring.'}, status=423)
 
         if not user.check_pin(pin):
-            data['count'] += 1
+            data['count'] = data.get('count', 0) + 1
             if data['count'] >= FAILED_PIN_LIMIT:
                 data['locked_until'] = now() + timedelta(minutes=PIN_LOCK_TIME)
             cache.set(key, data, timeout=60 * 60)
