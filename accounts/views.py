@@ -209,7 +209,7 @@ class EnterPinView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        phone = request.data.get('phone_number')
+        phone = request.data.get('phone_number') or request.data.get('phone_number')
         pin = request.data.get('pin')
 
         if not phone or not pin:
