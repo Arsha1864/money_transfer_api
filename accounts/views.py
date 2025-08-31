@@ -32,8 +32,15 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils.timezone import now, timedelta
 from django.core.cache import cache
 
+
+from datetime import timedelta
+# konfiguratsiya
 FAILED_PIN_LIMIT = 3
-PIN_LOCK_TIME = 15  # daqiqa
+PIN_LOCK_MINUTES = 15
+CYCLES_BEFORE_FORCE_LOGIN = 2  # misol uchun: ikki sikldan keyin login talab qilinsin
+
+
+ 
 
 User = get_user_model()
 
@@ -204,46 +211,74 @@ class PinStatusView(APIView):
 
 
     # Enter Pin cod
+# accounts/views.py (yoki kerakli papkada)
+
+
+def _cache_key(user_id):
+    return f"pin_attempts:{user_id}"
+
 class EnterPinView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]  # endpoint useToken false bo'ladi
 
     def post(self, request):
-        phone = request.data.get('phone_number')
-        pin = request.data.get('pin_code')
+        phone = request.data.get('phone_number')  # frontend shu nom bilan yuborsin
+        pin = request.data.get('pin')
 
         if not phone or not pin:
-            return Response({'detail': 'Telefon raqam yoki PIN yo‘q'}, status=400)
+            return Response({'detail': 'phone_number yoki pin kerak'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = CustomUser.objects.filter(phone_number=phone).first()
-
         if not user:
-            return Response({'detail': 'Foydalanuvchi topilmadi'}, status=404)
+            return Response({'detail': 'Foydalanuvchi topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
-        key = f"pin_attempts:{user.id}"
-        data = cache.get(key, {'count': 0, 'locked_until': None})
+        # cache-dan olingan struktura: {'count': int, 'locked_until': datetime, 'cycles': int}
+        key = _cache_key(user.id)
+        data = cache.get(key) or {'count': 0, 'locked_until': None, 'cycles': 0}
 
-        # 🔒 bloklangan vaqt tekshirish
-        if data['locked_until'] and now() < data['locked_until']:
-            return Response({'detail': 'PIN bloklangan. Keyinroq urinib ko‘ring.'}, status=423)
+        # bloklanganmi?
+        if data.get('locked_until') and timezone.now() < data['locked_until']:
+            return Response({'detail': 'PIN bloklangan. Keyinroq urinib ko‘ring.'}, status=status.HTTP_423_LOCKED)
 
-        # ❌ noto‘g‘ri pin
-        if not user.check_pin(pin):
-            data['count'] += 1
+        # pinni tekshirish
+        if not user.pin_code:
+            return Response({'detail': 'PIN o‘rnatilmagan'}, status=status.HTTP_400_BAD_REQUEST)
+
+        pin_ok = check_password(pin, user.pin_code)
+        if not pin_ok:
+            data['count'] = data.get('count', 0) + 1
+
             if data['count'] >= FAILED_PIN_LIMIT:
-                data['locked_until'] = now() + timedelta(minutes=PIN_LOCK_TIME)
-            cache.set(key, data, timeout=60 * 60)
-            return Response({'detail': 'Noto‘g‘ri PIN'}, status=401)
+                # bir sikl yakunlandi: bloklash va cycles oshirish
+                data['locked_until'] = timezone.now() + timedelta(minutes=PIN_LOCK_MINUTES)
+                data['count'] = 0
+                data['cycles'] = data.get('cycles', 0) + 1
 
-        # ✅ to‘g‘ri pin → attemptsni o‘chirib tashlaymiz
+                cache.set(key, data, timeout=60 * 60 * 24)  # cache uchun yetarli timeout
+                # Agar sikllar ma'lum chegara oshsa, majburiy to'liq login
+                if data['cycles'] >= CYCLES_BEFORE_FORCE_LOGIN:
+                    # to'liq login talab etilsin: foydalanuvchini pinni tiklash/login sahifasiga yuborish
+                    cache.delete(key)  # reset
+                    return Response({'detail': 'Ko‘p marta xato. Iltimos, to‘liq login qiling.'}, status=status.HTTP_403_FORBIDDEN)
+
+                return Response({'detail': f'PIN noto\'g\'ri. {PIN_LOCK_MINUTES} daqiqa bloklandi.'}, status=status.HTTP_423_LOCKED)
+
+            # saqlash va qaytish
+            cache.set(key, data, timeout=60 * 60)
+            return Response({'detail': 'Noto\'g\'ri PIN'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # pin to'g'ri bo'lsa — urinishlarni tiklab qo'yish
         cache.delete(key)
 
+        # tokenlar tayyorlash (SimpleJWT)
         refresh = RefreshToken.for_user(user)
-        return Response({
+        data = {
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'fingerprint_enabled': user.has_fingerprint_enabled
-        }, status=200)
-    
+            'fingerprint_enabled': bool(user.has_fingerprint_enabled),
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
 # 📌 Forgot Password (ochiq)
 def generate_random_password(length=8):
           return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
