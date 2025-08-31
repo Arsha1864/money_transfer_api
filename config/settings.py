@@ -143,7 +143,8 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'rest_framework_simplejwt',
-    
+    'rest_framework_simplejwt.token_blacklist',
+
     # Your apps
     'accounts',
     'notifications',
@@ -171,3 +172,4 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
+
