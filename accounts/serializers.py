@@ -64,18 +64,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-
-class LoginSerializer(serializers.Serializer):
-    phone = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-
-    def validate(self, data):
-        user = authenticate(phone=data['phone'], password=data['password'])
-        if user and user.is_active:
-            return user
-        raise serializers.ValidationError("Telefon raqam yoki parol noto‘g‘ri")
-
-
 class VerifySmsSerializer(serializers.Serializer):
     phone = serializers.CharField()
     code = serializers.CharField()
@@ -88,7 +76,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
 class SetPinSerializer(serializers.Serializer):
     pin = serializers.CharField(min_length=4, max_length=4)
-    biometric = serializers.BooleanField(default=False)
+    
 
     def validate_pin(self, value):
         if not value.isdigit():
@@ -97,7 +85,6 @@ class SetPinSerializer(serializers.Serializer):
 
     def update_pin(self, user):
         user.pin = self.validated_data['pin']
-        user.biometric_enabled = self.validated_data['biometric']
         user.save()
         return user
 
@@ -118,11 +105,16 @@ class ChangePasswordSerializer(serializers.Serializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        if not self.user.is_verified:
-            raise serializers.ValidationError("Telefon raqam tasdiqlanmagan.")
-        
+
+        user = getattr(self, "user", None)
+        if not user:
+            raise serializers.ValidationError("Login ma'lumotlari noto‘g‘ri")
+
+        if not user.is_verified:
+            raise serializers.ValidationError("Telefon raqam tasdiqlanmagan")
+
         data.update({
-            "phone_number": self.user.phone_number,
+            "phone_number": user.phone_number,
+            "username": user.username,
         })
         return data
-    
