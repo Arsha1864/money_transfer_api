@@ -221,13 +221,13 @@ class EnterPinView(APIView):
     permission_classes = [permissions.AllowAny]  # endpoint useToken false bo'ladi
 
     def post(self, request):
-        phone = request.data.get('phone_number')  # frontend shu nom bilan yuborsin
-        pin = request.data.get('pin')
+        phone_number = request.data.get('phone_number')  # frontend shu nom bilan yuborsin
+        pin_code = request.data.get('pin')
 
-        if not phone or not pin:
+        if not phone_number or not pin_code:
             return Response({'detail': 'phone_number yoki pin kerak'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = CustomUser.objects.filter(phone_number=phone).first()
+        user = CustomUser.objects.filter(phone_number=phone_number).first()
         if not user:
             return Response({'detail': 'Foydalanuvchi topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -243,7 +243,7 @@ class EnterPinView(APIView):
         if not user.pin_code:
             return Response({'detail': 'PIN o‘rnatilmagan'}, status=status.HTTP_400_BAD_REQUEST)
 
-        pin_ok = check_password(pin, user.pin_code)
+        pin_ok = check_password(pin_code, user.pin_code)
         if not pin_ok:
             data['count'] = data.get('count', 0) + 1
 
