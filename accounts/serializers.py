@@ -23,19 +23,13 @@ class NotificationSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'user']
 
 
-
-
-
 class FeedbackSerializer(serializers.ModelSerializer):
     from_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Feedback
         fields = ['id', 'message', 'image', 'created_at', 'from_user']
-
-    def get_from_user(self, obj):
-        request = self.context.get('request')
-        return obj.user == request.user
+        read_only_fields = ['id', 'created_at', 'from_user']
 
 
 class RegisterSerializer(serializers.ModelSerializer):

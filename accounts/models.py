@@ -36,7 +36,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_agreed = models.BooleanField(default=True)
     pin_code = models.CharField(max_length=128, blank=True, null=True)  # SHIFRLANGAN pin
-    has_fingerprint_enabled =models.BooleanField(default=False)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     verification_code = models.CharField(max_length=6, blank=True, null=True)
@@ -67,7 +66,7 @@ class Feedback(models.Model):
     image = models.ImageField(upload_to='feedback_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def str(self):
+    def __str__(self):
         return f"{self.user.username} - {self.created_at}"
     
 # Notification model
@@ -88,6 +87,6 @@ class VerificationCode(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_used = models.BooleanField(default=False)
 
-    def str(self):
+    def __str__(self):
         return f"{self.phone} - {self.code}"
 

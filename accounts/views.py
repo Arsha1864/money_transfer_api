@@ -416,21 +416,19 @@ def home_page(request):
     return render(request, 'home.html')
 
 # Fikrlar ro‘yxati – faqat adminlar uchun
-
-
 class FeedbackViewSet(viewsets.ModelViewSet):
-    queryset = Feedback.objects.all().order_by('created_at')
     serializer_class = FeedbackSerializer
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         user = self.request.user
-        return Feedback.objects.filter(user__in=[user, 1]).order_by('created_at')  # 1 — admin id
+        if user.is_superuser:
+            return Feedback.objects.all().order_by('created_at')
+        return Feedback.objects.filter(user=user).order_by('created_at')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    
 
 # 🔔 Foydalanuvchining barcha xabarnomalarini ko‘rsatish
 class NotificationListView(generics.ListAPIView):
