@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.timezone import now
-
+from django.utils.html import format_html
 from .models import Feedback, Notification
 from accounts.models import CustomUser
 User = get_user_model()
@@ -62,3 +62,12 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ('title', 'message', 'user__username')
     list_filter = ('created_at',)
 
+
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'comment', 'image_tag')
+
+    def image_tag(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height:50px;"/>', obj.image.url)
+        return "-"
+    image_tag.short_description = 'Image'
