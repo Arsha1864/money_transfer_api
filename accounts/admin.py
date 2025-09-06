@@ -45,7 +45,7 @@ class CustomUserAdmin(BaseUserAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'message_short', 'image', 'created_at')
+    list_display = ('id', 'user', 'message_short', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('user__username', 'message')
     readonly_fields = ('created_at',)
