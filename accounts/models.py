@@ -9,6 +9,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 
 
+
    # Custom user manager
 class CustomUserManager(BaseUserManager):
     def create_user(self, phone_number,username, password=None, **extra_fields):
@@ -59,16 +60,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 # Feedback model
 
-
 class Feedback(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='feedbacks',null=True,blank=True)
-    message = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='feedback_images/', blank=True, null=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="feedbacks"
+    )
+    message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.user.username} - {self.created_at}"
-    
+    def str(self):
+        return f"{self.user.phone_number} - {self.message[:30]}"
+
 # Notification model
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')

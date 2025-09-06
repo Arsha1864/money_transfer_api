@@ -6,6 +6,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.validators import RegexValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
 User = get_user_model()
 
 
@@ -23,14 +24,14 @@ class NotificationSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'user']
 
 
+
 class FeedbackSerializer(serializers.ModelSerializer):
-    from_user = serializers.SerializerMethodField()
+    user = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Feedback
-        fields = ['id', 'message', 'image', 'created_at', 'from_user']
-        read_only_fields = ['id', 'created_at', 'from_user']
-
+        fields = ['id', 'user', 'message', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)

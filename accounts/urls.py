@@ -4,8 +4,6 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView       # tokenni tekshirish
 )
 from rest_framework.routers import DefaultRouter
-from .views import FeedbackViewSet
-
 
 
 from accounts.token import CustomTokenObtainPairView
@@ -26,10 +24,9 @@ from .views import (
     PinStatusView,
     ChangePhoneView,
     ChangePinView,
-   
+   FeedbackListCreateView
 )
-router = DefaultRouter()
-router.register(r'feedback', FeedbackViewSet, basename='feedback')
+
 
 
 
@@ -50,7 +47,8 @@ urlpatterns = [
     path('custom-admin/', dashboard, name='custom_dashboard'),
 
     # Feedback
-     path('', include(router.urls)),
+
+    path('feedback/', FeedbackListCreateView.as_view(), name='feedback'),
 
     # Notification
     path('notifications/', NotificationListView.as_view(), name='list_notifications'),
