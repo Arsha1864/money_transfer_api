@@ -206,7 +206,6 @@ class PinStatusView(APIView):
 
         return Response({
             "has_pin": has_pin,
-            "biometric_enabled": user.has_fingerprint_enabled
         }, status=status.HTTP_200_OK)
 
 
