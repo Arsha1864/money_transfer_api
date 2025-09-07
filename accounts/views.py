@@ -29,11 +29,12 @@ from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.utils.timezone import now, timedelta
+from django.utils import timezone
+from datetime import timedelta
 from django.core.cache import cache
 
 
-from datetime import timedelta
+
 # konfiguratsiya
 FAILED_PIN_LIMIT = 3
 PIN_LOCK_MINUTES = 15
