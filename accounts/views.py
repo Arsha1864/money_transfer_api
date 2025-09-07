@@ -33,14 +33,11 @@ from django.utils import timezone
 from datetime import timedelta
 from django.core.cache import cache
 
+from django.conf import settings
 
-
-# konfiguratsiya
-FAILED_PIN_LIMIT = 3
-PIN_LOCK_MINUTES = 15
-CYCLES_BEFORE_FORCE_LOGIN = 2  # misol uchun: ikki sikldan keyin login talab qilinsin
-
-
+FAILED_PIN_LIMIT = settings.FAILED_PIN_LIMIT
+PIN_LOCK_MINUTES = settings.PIN_LOCK_MINUTES
+CYCLES_BEFORE_FORCE_LOGIN = settings.CYCLES_BEFORE_FORCE_LOGIN
  
 
 User = get_user_model()

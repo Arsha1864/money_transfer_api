@@ -173,3 +173,6 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
+FAILED_PIN_LIMIT = 3
+PIN_LOCK_MINUTES = 15
+CYCLES_BEFORE_FORCE_LOGIN = 2
