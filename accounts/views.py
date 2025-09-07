@@ -307,7 +307,6 @@ class SetOrUpdatePinView(APIView):
 
     def post(self, request):
         pin = request.data.get('pin')
-        biometric = request.data.get('biometric', False)
 
         # PIN validatsiyasi: 4 xonali raqam bo'lishi kerak
         if not pin or len(pin) != 4 or not pin.isdigit():
@@ -320,7 +319,6 @@ class SetOrUpdatePinView(APIView):
 
         # PIN shifrlanib saqlanadi
         user.pin_code = make_password(pin)
-        user.has_fingerprint_enabled = biometric
         user.save()
 
         return Response({
