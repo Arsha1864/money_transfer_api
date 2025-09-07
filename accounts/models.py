@@ -66,7 +66,7 @@ class Feedback(models.Model):
         on_delete=models.CASCADE,
         related_name="feedbacks"
     )
-    message = models.TextField()
+    message = models.TextField(default='No message')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def str(self):
