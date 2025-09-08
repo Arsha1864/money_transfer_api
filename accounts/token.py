@@ -14,6 +14,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         data['phone_number'] = self.user.phone_number
         data['username'] = self.user.username
+        data['id'] = self.user.id
         return data
 
 class CustomTokenObtainPairView(TokenObtainPairView):
