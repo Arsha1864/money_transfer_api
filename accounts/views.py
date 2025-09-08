@@ -271,7 +271,7 @@ class EnterPinView(APIView):
         data = {
             'access': str(refresh.access_token),
             'refresh': str(refresh),
-            'fingerprint_enabled': bool(user.has_fingerprint_enabled),
+            # 'fingerprint_enabled': bool(user.has_fingerprint_enabled),
         }
         return Response(data, status=status.HTTP_200_OK)
 
