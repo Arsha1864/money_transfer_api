@@ -30,7 +30,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Feedback
-        fields = ['id', 'user', 'message', 'created_at']
+        fields = ['id', 'user', 'message', 'created_at', 'from_user']
         read_only_fields = ['id', 'user', 'created_at']
 
 class RegisterSerializer(serializers.ModelSerializer):
