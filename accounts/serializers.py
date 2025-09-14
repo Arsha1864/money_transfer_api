@@ -27,11 +27,14 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class FeedbackSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
+    from_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Feedback
         fields = ['id', 'user', 'message', 'created_at', 'from_user']
-        read_only_fields = ['id', 'user', 'created_at']
+
+    def get_from_user(self, obj):
+        return obj.user == self.context['request'].user
 
 class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
