@@ -34,6 +34,14 @@ from datetime import timedelta
 from django.core.cache import cache
 
 from django.conf import settings
+       # notifications/views.py
+import requests
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework.views import APIView
+from .models import Notification
+from .serializers import NotificationSerializer
 
 FAILED_PIN_LIMIT = settings.FAILED_PIN_LIMIT
 PIN_LOCK_MINUTES = settings.PIN_LOCK_MINUTES
@@ -440,3 +448,48 @@ class MarkNotificationReadView(APIView):
             return Response({'detail': 'Xabarnoma o‘qilgan deb belgilandi'}, status=status.HTTP_200_OK)
         except Notification.DoesNotExist:
             return Response({'error': 'Xabarnoma topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+FIREBASE_SERVER_KEY = "YOUR_SERVER_KEY"  # Firebase Console → Project Settings → Cloud Messaging → Server key
+
+def send_fcm_notification(token, title, message):
+    url = "https://fcm.googleapis.com/fcm/send"
+    payload = {
+        "to": token,
+        "notification": {   # tray uchun
+            "title": title,
+            "body": message
+        },
+        "data": {           # app ichidagi navigatsiya uchun
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+            "screen": "notifications"
+        }
+    }
+    headers = {
+        "Authorization": f"key={FIREBASE_SERVER_KEY}",
+        "Content-Type": "application/json"
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    return response.json()
+
+
+class NotificationCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        title = request.data.get("title")
+        message = request.data.get("message")
+
+        # DB ga yozamiz
+        notification = Notification.objects.create(
+            user=request.user,
+            title=title,
+            message=message
+        )
+
+        # 🔔 FCM yuboramiz
+        if request.user.fcm_token:
+            send_fcm_notification(request.user.fcm_token, title, message)
+
+        return Response({"detail": "Notification yuborildi"}, status=200) 

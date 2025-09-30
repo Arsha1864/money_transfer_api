@@ -23,7 +23,14 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'title', 'message', 'created_at']
         read_only_fields = ['id', 'created_at', 'user']
 
+# accounts/serializers.py
 
+
+
+class FCMTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['fcm_token']
 
 class FeedbackSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
