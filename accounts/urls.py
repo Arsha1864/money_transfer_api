@@ -24,7 +24,9 @@ from .views import (
     ChangePhoneView,
     ChangePinView,
    FeedbackListCreateView,
-   NotificationCreateView
+   AdminCreateNotificationView,
+   
+  
 )
 
 
@@ -62,10 +64,11 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('enter-pin/', EnterPinView.as_view(), name='enter-pin'),
+    #Notification 
 
-    path('', NotificationListView.as_view(), name='notification-list'),
-    path('<int:pk>/read/', MarkNotificationReadView.as_view(), name='notification-read'),
-    path('create/', NotificationCreateView.as_view(), name='notification-create'),
+    path('notifications/', NotificationListView.as_view(), name='notifications-list'),
+    path('notifications/<int:pk>/mark-read/', MarkNotificationReadView.as_view(), name='notifications-mark-read'),
+    path('admin/notifications/send/', AdminCreateNotificationView.as_view(), name='admin-notification-send'),
 ]
 
 

@@ -10,6 +10,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 
 
+
    # Custom user manager
 class CustomUserManager(BaseUserManager):
     def create_user(self, phone_number,username, password=None, **extra_fields):
@@ -72,16 +73,26 @@ class Feedback(models.Model):
     def str(self):
         return f"{self.user.phone_number} - {self.message[:30]}"
 
-# Notification model
+# backend/app_name/models.p
+
+class Device(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='devices')
+    token = models.CharField(max_length=512)  # FCM device token
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def str(self):
+        return f"{self.user} - {self.token[:8]}"
+
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=255)
     message = models.TextField()
+    is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.title} - {self.user.phone_number}"
-    
+    def str(self):
+        return f"{self.title} -> {self.user}"
+
     # accounts/models.py
 class VerificationCode(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)

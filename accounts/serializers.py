@@ -17,15 +17,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'phone']
 
 
+# backend/app_name/serializers.py
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ['id', 'user', 'title', 'message', 'created_at']
-        read_only_fields = ['id', 'created_at', 'user']
-
-# accounts/serializers.py
-
-
+        fields = ['id', 'title', 'message', 'is_read', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
 class FCMTokenSerializer(serializers.ModelSerializer):
     class Meta:

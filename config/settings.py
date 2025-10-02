@@ -176,3 +176,7 @@ SIMPLE_JWT = {
 FAILED_PIN_LIMIT = 3
 PIN_LOCK_MINUTES = 15
 CYCLES_BEFORE_FORCE_LOGIN = 2
+
+# settings.py
+FIREBASE_SERVICE_ACCOUNT_JSON = "/path/to/firebase-service-account.json"
+FIREBASE_PROJECT_ID = "arshaapp-9a14f"

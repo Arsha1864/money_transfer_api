@@ -35,13 +35,12 @@ from django.core.cache import cache
 
 from django.conf import settings
        # notifications/views.py
-import requests
-from django.conf import settings
-from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
-from .models import Notification
+from rest_framework.response import Response
+from .models import Notification, Device
 from .serializers import NotificationSerializer
+from .utils import send_fcm_notification_to_token
 
 FAILED_PIN_LIMIT = settings.FAILED_PIN_LIMIT
 PIN_LOCK_MINUTES = settings.PIN_LOCK_MINUTES
@@ -428,6 +427,12 @@ class FeedbackListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 # 🔔 Foydalanuvchining barcha xabarnomalarini ko‘rsatish
+
+
+# 🔔 Foydalanuvchining barcha xabarlari
+# backend/app_name/views.py
+
+
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -435,61 +440,54 @@ class NotificationListView(generics.ListAPIView):
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 
-
-# ✅ Bitta xabarnomani "o‘qilgan" deb belgilash
 class MarkNotificationReadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         try:
-            notification = Notification.objects.get(pk=pk, user=request.user)
-            notification.is_read = True
-            notification.save()
-            return Response({'detail': 'Xabarnoma o‘qilgan deb belgilandi'}, status=status.HTTP_200_OK)
+            notif = Notification.objects.get(pk=pk, user=request.user)
+            notif.is_read = True
+            notif.save()
+            return Response({'detail': 'Marked read'}, status=status.HTTP_200_OK)
         except Notification.DoesNotExist:
-            return Response({'error': 'Xabarnoma topilmadi'}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
 
-
-FIREBASE_SERVER_KEY = "YOUR_SERVER_KEY"  # Firebase Console → Project Settings → Cloud Messaging → Server key
-
-def send_fcm_notification(token, title, message):
-    url = "https://fcm.googleapis.com/fcm/send"
-    payload = {
-        "to": token,
-        "notification": {   # tray uchun
-            "title": title,
-            "body": message
-        },
-        "data": {           # app ichidagi navigatsiya uchun
-            "click_action": "FLUTTER_NOTIFICATION_CLICK",
-            "screen": "notifications"
-        }
-    }
-    headers = {
-        "Authorization": f"key={FIREBASE_SERVER_KEY}",
-        "Content-Type": "application/json"
-    }
-    response = requests.post(url, json=payload, headers=headers)
-    return response.json()
-
-
-class NotificationCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+# Admin/API side: create a notification and send FCM
+class AdminCreateNotificationView(APIView):
+    permission_classes = [permissions.IsAdminUser]  # or custom perms
 
     def post(self, request):
-        title = request.data.get("title")
-        message = request.data.get("message")
+        """
+        Body: {
+          "user_id": <id>,
+          "title": "...",
+          "message": "...",
+          "data": {"key":"value"} (optional)
+        }
+        """
+        user_id = request.data.get('user_id')
+        title = request.data.get('title')
+        message = request.data.get('message')
+        data = request.data.get('data', {})
 
-        # DB ga yozamiz
-        notification = Notification.objects.create(
-            user=request.user,
-            title=title,
-            message=message
-        )
+        if not user_id or not title or not message:
+            return Response({'detail': 'Missing fields'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 🔔 FCM yuboramiz
-        if request.user.fcm_token:
-            send_fcm_notification(request.user.fcm_token, title, message)
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        return Response({"detail": "Notification yuborildi"}, status=200) 
+        # create DB notification
+        notif = Notification.objects.create(user=user, title=title, message=message)
+
+        # send to all device tokens
+        devices = Device.objects.filter(user=user)
+        results = []
+        for d in devices:
+            status_code, resp_text = send_fcm_notification_to_token(d.token, title, message, data=data)
+            results.append({'token': d.token, 'status_code': status_code, 'resp': resp_text})
+
+        return Response({'detail': 'sent', 'results': results}, status=status.HTTP_201_CREATED)
