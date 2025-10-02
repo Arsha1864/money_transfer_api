@@ -16,7 +16,7 @@ FeedbackSerializer,
 UserSerializer,
 
 )
-from .models import Feedback  # type: ignore
+from .models import Feedback  
 from .sms_service import SMSService
 from accounts.models import CustomUser
 from django.contrib.auth.models import User
@@ -28,7 +28,7 @@ from django.contrib.auth.hashers import make_password,check_password
 from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.parsers import MultiPartParser, FormParser
+
 from django.utils import timezone
 from datetime import timedelta
 from django.core.cache import cache
