@@ -10,7 +10,6 @@ User = get_user_model()
 
 
 
-
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
     model = CustomUser
@@ -56,12 +55,12 @@ class FeedbackAdmin(admin.ModelAdmin):
     message_short.short_description = 'Message'
 
 
+
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'created_at')
-    search_fields = ('title', 'message', 'user__username')
-    list_filter = ('created_at',)
-
+    list_display = ('title', 'user', 'created_at', 'is_read')
+    search_fields = ('title', 'message', 'userusername', 'userphone_number')
+    list_filter = ('created_at', 'is_read')
 
 class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'comment', 'image_tag')
