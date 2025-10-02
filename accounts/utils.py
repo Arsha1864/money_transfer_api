@@ -6,7 +6,7 @@ import google.auth.transport.requests
 from django.conf import settings
 import logging
 
-logger = logging.getLogger(name)
+logger = logging.getLogger(__name__)
 
 SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 
