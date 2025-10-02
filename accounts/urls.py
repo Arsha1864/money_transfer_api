@@ -53,8 +53,8 @@ urlpatterns = [
     path('feedback/', FeedbackListCreateView.as_view(), name='feedback'),
 
     # Notification
-    path('notifications/', NotificationListView.as_view(), name='list_notifications'),
-    path('notifications/<int:pk>/mark-read/', MarkNotificationReadView.as_view(), name='mark_notification_read'),
+    #path('notifications/', NotificationListView.as_view(), name='list_notifications'),
+    #path('notifications/<int:pk>/mark-read/', MarkNotificationReadView.as_view(), name='mark_notification_read'),
 
     path('verify_card_sms/', VerifyCardSmsView.as_view()),
     path('resend_card_sms/', ResendCardSmsView.as_view()),
