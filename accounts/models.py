@@ -4,13 +4,6 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 
-
-
-
-
-
-
-
    # Custom user manager
 class CustomUserManager(BaseUserManager):
     def create_user(self, phone_number,username, password=None, **extra_fields):
@@ -71,17 +64,15 @@ class Feedback(models.Model):
     message = models.TextField(default='No message')
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def str(self):
+    def __str__(self):
         return f"{self.user.phone_number} - {self.message[:30]}"
-
-# backend/app_name/models.p
 
 class Device(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='devices')
     token = models.CharField(max_length=512)  # FCM device token
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def str(self):
+    def __str__(self):
         return f"{self.user} - {self.token[:8]}"
 
 class Notification(models.Model):
@@ -91,7 +82,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def str(self):
+    def __str__(self):
         return f"{self.title} -> {self.user}"
 
     # accounts/models.py
@@ -105,9 +96,3 @@ class VerificationCode(models.Model):
     def __str__(self):
         return f"{self.phone} - {self.code}"
 
-# accounts/models.py
-
-
-class User(AbstractBaseUser):
-    phone_number = models.CharField(max_length=20, unique=True)
-    fcm_token = models.TextField(blank=True, null=True)  # 🔑 FCM token

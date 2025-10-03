@@ -1,13 +1,13 @@
-from rest_framework.views import APIView  # type: ignore
-from rest_framework.response import Response  # type: ignore
-from rest_framework import status  # type: ignore
-from django.contrib.auth import authenticate  # type: ignore
-from django.contrib.auth import get_user_model  # type: ignore
+from rest_framework.views import APIView 
+from rest_framework.response import Response 
+from rest_framework import status  
+from django.contrib.auth import authenticate  
+from django.contrib.auth import get_user_model  
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import permission_classes
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from rest_framework import generics, permissions ,viewsets
+from rest_framework import generics, permissions
 from .models import Notification,VerificationCode
 from .serializers import (
 NotificationSerializer,
@@ -22,7 +22,7 @@ from accounts.models import CustomUser
 from django.contrib.auth.models import User
 import string
 import random
-from card.models import Card  # <-- sizning karta model nomi
+from card.models import Card 
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password,check_password
 from accounts.sms_service import SMSService
