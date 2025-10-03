@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import (
 
 from accounts.token import CustomTokenObtainPairView
 from .views import (
+    UpdateFCMTokenView,
     dashboard,
     UserCreateAPIView,
     RegisterView,
@@ -64,6 +65,7 @@ urlpatterns = [
     path('notifications/', NotificationListView.as_view(), name='notifications-list'),
     path('notifications/<int:pk>/mark-read/', MarkNotificationReadView.as_view(), name='notifications-mark-read'),
     path('admin/notifications/send/', AdminCreateNotificationView.as_view(), name='admin-notification-send'),
+    path("user/update-fcm-token/", UpdateFCMTokenView.as_view(), name="update-fcm-token"),
 ]
 
 
