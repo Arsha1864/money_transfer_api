@@ -38,7 +38,7 @@ from django.conf import settings
 from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Notification, Device
+from .models import Notification
 from .serializers import NotificationSerializer
 from .utils import send_fcm_notification_to_token
 

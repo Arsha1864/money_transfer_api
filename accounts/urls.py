@@ -11,7 +11,6 @@ from .views import (
     dashboard,
     UserCreateAPIView,
     RegisterView,
-    
     VerifyCodeView,
     ForgotPasswordView,
     SetOrUpdatePinView,

@@ -66,6 +66,7 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.user.phone_number} - {self.message[:30]}"
+    
  # notification
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
