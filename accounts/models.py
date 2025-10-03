@@ -66,15 +66,7 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.user.phone_number} - {self.message[:30]}"
-
-class Device(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='devices')
-    token = models.CharField(max_length=512)  # FCM device token
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user} - {self.token[:8]}"
-
+ # notification
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     title = models.CharField(max_length=255)

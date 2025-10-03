@@ -10,7 +10,7 @@ from .views import (
     dashboard,
     UserCreateAPIView,
     RegisterView,
-    LoginView,  # bu kerak bo‘lsa, boshqa yo‘l nomi bilan
+    
     VerifyCodeView,
     ForgotPasswordView,
     SetOrUpdatePinView,
@@ -25,17 +25,12 @@ from .views import (
     ChangePinView,
    FeedbackListCreateView,
    AdminCreateNotificationView,
-   
-  
 )
-
-
-
 
 urlpatterns = [
     path('', UserCreateAPIView.as_view(), name='user-list'),
     path('register/', RegisterView.as_view(), name='register'),
-    path('login-old/', LoginView.as_view(), name='login-old'),  # Agar eski login kerak bo‘lsa
+   # path('login-old/', LoginView.as_view(), name='login-old'),  # Agar eski login kerak bo‘lsa
 
     path('verify/', VerifyCodeView.as_view(), name='verify'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),

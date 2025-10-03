@@ -454,17 +454,9 @@ class MarkNotificationReadView(APIView):
 
 # Admin/API side: create a notification and send FCM
 class AdminCreateNotificationView(APIView):
-    permission_classes = [permissions.IsAdminUser]  # or custom perms
+    permission_classes = [permissions.IsAdminUser]
 
     def post(self, request):
-        """
-        Body: {
-          "user_id": <id>,
-          "title": "...",
-          "message": "...",
-          "data": {"key":"value"} (optional)
-        }
-        """
         user_id = request.data.get('user_id')
         title = request.data.get('title')
         message = request.data.get('message')
@@ -480,14 +472,11 @@ class AdminCreateNotificationView(APIView):
         except User.DoesNotExist:
             return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # create DB notification
         notif = Notification.objects.create(user=user, title=title, message=message)
 
-        # send to all device tokens
-        devices = Device.objects.filter(user=user)
         results = []
-        for d in devices:
-            status_code, resp_text = send_fcm_notification_to_token(d.token, title, message, data=data)
-            results.append({'token': d.token, 'status_code': status_code, 'resp': resp_text})
+        if user.fcm_token:
+            status_code, resp_text = send_fcm_notification_to_token(user.fcm_token, title, message, data=data)
+            results.append({'token': user.fcm_token, 'status_code': status_code, 'resp': resp_text})
 
         return Response({'detail': 'sent', 'results': results}, status=status.HTTP_201_CREATED)

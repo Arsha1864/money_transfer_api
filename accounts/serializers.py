@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Feedback, Notification
+from .models import CustomUser, Feedback, Notification
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.validators import RegexValidator
 
@@ -25,7 +25,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class FCMTokenSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['fcm_token']
 
 class FeedbackSerializer(serializers.ModelSerializer):
