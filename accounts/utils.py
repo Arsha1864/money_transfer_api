@@ -5,8 +5,7 @@ from google.oauth2 import service_account
 import google.auth.transport.requests
 from django.conf import settings
 import logging
-from firebase_admin import messaging
-from firebase_admin import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -50,17 +49,3 @@ def send_fcm_notification_to_token(token, title, body, data=None):
     
 
 
-
-def send_push_notification(token, title, body, data=None):
-    """FCM orqali xabar yuborish"""
-    message = messaging.Message(
-        notification=messaging.Notification(
-            title=title,
-            body=body
-        ),
-        token=token,
-        data=data or {}
-    )
-    response = messaging.send(message)
-    print("✅ FCM yuborildi:", response)
-    return response

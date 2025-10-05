@@ -29,9 +29,6 @@ from accounts.sms_service import SMSService
 from rest_framework_simplejwt.tokens import RefreshToken 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 #notification
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .utils import send_push_notification
 
 from django.utils import timezone
 from datetime import timedelta
@@ -498,20 +495,3 @@ class UpdateFCMTokenView(APIView):
         if request.user.fcm_token != token:
             request.user.fcm_token = token
             request.user.save(update_fields=["fcm_token"])
-
-      
-    
-
-
-class SendNotificationView(APIView):
-    def post(self, request):
-        token = request.data.get("token")  # foydalanuvchining FCM tokeni
-        title = request.data.get("title")
-        body = request.data.get("body")
-        data = request.data.get("data", {})
-
-        if not token:
-            return Response({"error": "Token required"}, status=400)
-
-        send_push_notification(token, title, body, data)
-        return Response({"success": True})
