@@ -19,28 +19,23 @@ def get_fcm_access_token():
     return creds.token
 
 def send_fcm_notification_to_token(token, title, body, data=None):
-    """
-    Send a notification via FCM v1 to single device token.
-    data can be a dict of additional key-value pairs (optional).
-    """
     access_token = get_fcm_access_token()
-    project_id = settings.FIREBASE_PROJECT_ID  # e.g. 'my-firebase-project'
+    project_id = settings.FIREBASE_PROJECT_ID
     url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
 
     message = {
         "message": {
             "token": token,
             "notification": {"title": title, "body": body},
-            # optionally add android/apns customization:
             "android": {
                 "priority": "HIGH",
                 "notification": {
                     "sound": "default",
-                    # If you have default icon name in Android manifest meta-data, use it.
-                    # "icon": "ic_notification"
-                }
+                    "icon": "ic_notification",  # ✅ drawable dan
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                },
             },
-            "data": data or {}
+            "data": data or {},
         }
     }
 
@@ -50,6 +45,4 @@ def send_fcm_notification_to_token(token, title, body, data=None):
     }
 
     resp = requests.post(url, headers=headers, json=message, timeout=10)
-    if resp.status_code >= 400:
-        logger.error("FCM send error %s %s", resp.status_code, resp.text)
     return resp.status_code, resp.text

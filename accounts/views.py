@@ -481,6 +481,7 @@ class AdminCreateNotificationView(APIView):
 
         return Response({'detail': 'sent', 'results': results}, status=status.HTTP_201_CREATED)
     
+    
 class UpdateFCMTokenView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -488,6 +489,10 @@ class UpdateFCMTokenView(APIView):
         token = request.data.get("fcm_token")
         if not token:
             return Response({"detail": "Missing fcm_token"}, status=status.HTTP_400_BAD_REQUEST)
-        request.user.fcm_token = token
-        request.user.save(update_fields=["fcm_token"])
+
+        # Eski tokenni yangilash (agar farqli bo‘lsa)
+        if request.user.fcm_token != token:
+            request.user.fcm_token = token
+            request.user.save(update_fields=["fcm_token"])
+
         return Response({"detail": "Token updated"}, status=status.HTTP_200_OK)
