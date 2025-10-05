@@ -25,6 +25,7 @@ from .views import (
     ChangePinView,
    FeedbackListCreateView,
    AdminCreateNotificationView,
+   SendNotificationView
 )
 
 urlpatterns = [
@@ -61,7 +62,7 @@ urlpatterns = [
     path('enter-pin/', EnterPinView.as_view(), name='enter-pin'),
     #Notification 
 
-    path('notifications/', NotificationListView.as_view(), name='notifications-list'),
+    path('notifications/', SendNotificationView.as_view(), name='notifications-list'),
     path('notifications/<int:pk>/mark-read/', MarkNotificationReadView.as_view(), name='notifications-mark-read'),
     path('admin/notifications/send/', AdminCreateNotificationView.as_view(), name='admin-notification-send'),
     path("user/update-fcm-token/", UpdateFCMTokenView.as_view(), name="update-fcm-token"),
