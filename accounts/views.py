@@ -499,7 +499,7 @@ class UpdateFCMTokenView(APIView):
             request.user.fcm_token = token
             request.user.save(update_fields=["fcm_token"])
 
-        return Response({"detail": "Token updated"}, status=status.HTTP_200_OK)
+      
     
 
 

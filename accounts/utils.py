@@ -47,7 +47,7 @@ def send_fcm_notification_to_token(token, title, body, data=None):
     }
 
     resp = requests.post(url, headers=headers, json=message, timeout=10)
-    return resp.status_code, resp.text
+    
 
 
 
