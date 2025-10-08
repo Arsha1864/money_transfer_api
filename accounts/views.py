@@ -51,26 +51,44 @@ User = get_user_model()
 
 # 📌 Register (ochiq)
 
-
 class RegisterView(APIView):
+    permission_classes = [AllowAny]  # ✅ Token talab qilinmaydi
+
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
+        phone_number = request.data.get('phone')
+        username = request.data.get('name')
+        password = request.data.get('password')
+        is_agreed = request.data.get('is_agreed', False)
 
-            # 🔑 Tokenlar yaratish
-            refresh = RefreshToken.for_user(user)
-            access = refresh.access_token
+        # 🔍 Maydonlar to‘liq to‘ldirilganmi
+        if not all([phone_number, username, password]):
+            return Response({'detail': 'Barcha maydonlarni to‘ldiring'}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({
-                'id': user.id,
-                'phone': user.phone,
-                'access': str(access),
-                'refresh': str(refresh),
-                'message': 'Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi'
-            }, status=status.HTTP_201_CREATED)
+        # 🔍 Telefon raqami mavjud emasmi?
+        if User.objects.filter(phone_number=phone_number).exists():
+            return Response({'detail': 'Bu raqam bilan foydalanuvchi allaqachon mavjud'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # ✅ Yangi foydalanuvchini yaratish
+        user = User.objects.create_user(
+            phone_number=phone_number,
+            username=username,
+            password=password,
+            is_agreed=is_agreed
+        )
+
+        # ✅ Tokenlar yaratish
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+
+        # ✅ Foydalanuvchi haqida javob
+        return Response({
+            'id': user.id,
+            'phone_number': user.phone_number,
+            'username': user.username,
+            'access': str(access),
+            'refresh': str(refresh),
+            'message': 'Ro‘yxatdan o‘tish muvaffaqiyatli yakunlandi'
+        }, status=status.HTTP_201_CREATED)
 
 # 📌 Login (ochiq)
 
