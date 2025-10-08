@@ -14,7 +14,6 @@ NotificationSerializer,
 RegisterSerializer,
 FeedbackSerializer,
 UserSerializer,
-
 )
 from .models import Feedback  
 from .sms_service import SMSService
@@ -51,30 +50,27 @@ CYCLES_BEFORE_FORCE_LOGIN = settings.CYCLES_BEFORE_FORCE_LOGIN
 User = get_user_model()
 
 # 📌 Register (ochiq)
-class RegisterView(APIView):
-    permission_classes = [AllowAny]
 
+
+class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
 
-            # Tasdiqlash kodi
-            code = random.randint(100000, 999999)
-            VerificationCode.objects.create(user=user, code=code)
-
-            SMSService(user.phone_number, code)
-
+            # 🔑 Tokenlar yaratish
             refresh = RefreshToken.for_user(user)
+            access = refresh.access_token
 
             return Response({
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "message": "Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi."
+                'id': user.id,
+                'phone': user.phone,
+                'access': str(access),
+                'refresh': str(refresh),
+                'message': 'Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi'
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 # 📌 Login (ochiq)
 
