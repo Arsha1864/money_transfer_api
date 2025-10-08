@@ -55,8 +55,8 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]  # ✅ Token talab qilinmaydi
 
     def post(self, request):
-        phone_number = request.data.get('phone')
-        username = request.data.get('name')
+        phone_number = request.data.get('phone_number')
+        username = request.data.get('username')
         password = request.data.get('password')
         is_agreed = request.data.get('is_agreed', False)
 
