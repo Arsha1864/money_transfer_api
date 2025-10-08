@@ -39,30 +39,15 @@ class FeedbackSerializer(serializers.ModelSerializer):
     def get_from_user(self, obj):
         return obj.user == self.context['request'].user
 
-class RegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(write_only=True)
-    phone = serializers.CharField(
-        validators=[RegexValidator(regex=r'^\+998\d{9}$', message="Telefon raqam formati noto‘g‘ri.")]
-    )
 
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ['name', 'phone', 'password', 'confirm_password', 'is_agreed']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
-
-    def validate(self, data):
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Parollar mos emas.")
-        if not data.get('is_agreed', False):
-            raise serializers.ValidationError("Foydalanuvchi shartlarga rozilik bildirmagan.")
-        return data
+        fields = [ 'username','password' ,'phone_number', 'is_agreed' ]
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')
-        user = User.objects.create_user(**validated_data)
-        return user
+        return User.objects.create_user(**validated_data)
 
 
 class VerifySmsSerializer(serializers.Serializer):
