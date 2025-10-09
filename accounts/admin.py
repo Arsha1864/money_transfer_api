@@ -9,7 +9,6 @@ User = get_user_model()
 
 
 
-
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
     model = CustomUser
@@ -56,11 +55,48 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 
 
+
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'created_at', 'is_read')
-    search_fields = ('title', 'message', 'userusername', 'userphone_number')
-    list_filter = ('created_at', 'is_read')
+    list_display = ('user', 'title', 'created_at')
+    actions = ['send_to_firebase']
+
+    def send_to_firebase(self, request, queryset):
+        import requests
+        from django.conf import settings
+        from .models import FCMToken
+
+        for notif in queryset:
+            try:
+                token_obj = FCMToken.objects.get(user=notif.user)
+                payload = {
+                    "to": token_obj.token,
+                    "notification": {
+                        "title": notif.title,
+                        "body": notif.body,
+                        "image": notif.image if notif.image else None,
+                    },
+                    "data": {
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                        "screen": "notifications_page",
+                    }
+                }
+
+                headers = {
+                    "Authorization": f"key={settings.FIREBASE_SERVER_KEY}",
+                    "Content-Type": "application/json",
+                }
+
+                res = requests.post("https://fcm.googleapis.com/fcm/send", json=payload, headers=headers)
+                if res.status_code == 200:
+                    self.message_user(request, f"✅ {notif.user.username} ga yuborildi")
+                else:
+                    self.message_user(request, f"❌ {notif.user.username} ga yuborilmadi ({res.status_code})")
+            except FCMToken.DoesNotExist:
+                self.message_user(request, f"⚠️ {notif.user.username} uchun token topilmadi")
+
+    send_to_firebase.short_description = "Tanlangan xabarlarni Firebase orqali yuborish"
+
 
 class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'comment', 'image_tag')
