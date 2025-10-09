@@ -5,10 +5,10 @@ from django.utils.timezone import now
 from django.utils.html import format_html
 from .models import Feedback, Notification
 from accounts.models import CustomUser
+from .utils import send_push_notification
 User = get_user_model()
 
-from .models import Notification, fcm_token
-from .utils import send_push_notification
+
 
 
 
@@ -58,7 +58,6 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 
 
-
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ("user", "title", "created_at")
@@ -66,17 +65,19 @@ class NotificationAdmin(admin.ModelAdmin):
 
     def send_to_user(self, request, queryset):
         for notif in queryset:
-            try:
-                token_obj = fcm_token.objects.get(user=notif.user)
-                success = send_push_notification(
-                    token_obj.token, notif.title, notif.body, notif.image
-                )
-                if success:
-                    self.message_user(request, f"✅ {notif.user.username} ga yuborildi")
-                else:
-                    self.message_user(request, f"⚠️ {notif.user.username} ga yuborishda xatolik")
-            except fcm_token.DoesNotExist:
-                self.message_user(request, f"❌ {notif.user.username} token topilmadi")
+            user = notif.user
+            if not user.fcm_token:
+                self.message_user(request, f"❌ {user.username} uchun FCM token topilmadi")
+                continue
+
+            success = send_push_notification(
+                user.fcm_token, notif.title, notif.body, notif.image
+            )
+
+            if success:
+                self.message_user(request, f"✅ {user.username} ga yuborildi")
+            else:
+                self.message_user(request, f"⚠️ {user.username} ga yuborishda xatolik")
 
     send_to_user.short_description = "Tanlangan xabarlarni Firebase orqali yuborish"
 
