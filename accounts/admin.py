@@ -7,6 +7,9 @@ from .models import Feedback, Notification
 from accounts.models import CustomUser
 User = get_user_model()
 
+from .models import Notification, fcm_token
+from .utils import send_push_notification
+
 
 
 @admin.register(CustomUser)
@@ -58,44 +61,24 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'created_at')
-    actions = ['send_to_firebase']
+    list_display = ("user", "title", "created_at")
+    actions = ["send_to_user"]
 
-    def send_to_firebase(self, request, queryset):
-        import requests
-        from django.conf import settings
-        from .models import FCMToken
-
+    def send_to_user(self, request, queryset):
         for notif in queryset:
             try:
-                token_obj = FCMToken.objects.get(user=notif.user)
-                payload = {
-                    "to": token_obj.token,
-                    "notification": {
-                        "title": notif.title,
-                        "body": notif.body,
-                        "image": notif.image if notif.image else None,
-                    },
-                    "data": {
-                        "click_action": "FLUTTER_NOTIFICATION_CLICK",
-                        "screen": "notifications_page",
-                    }
-                }
-
-                headers = {
-                    "Authorization": f"key={settings.FIREBASE_SERVER_KEY}",
-                    "Content-Type": "application/json",
-                }
-
-                res = requests.post("https://fcm.googleapis.com/fcm/send", json=payload, headers=headers)
-                if res.status_code == 200:
+                token_obj = fcm_token.objects.get(user=notif.user)
+                success = send_push_notification(
+                    token_obj.token, notif.title, notif.body, notif.image
+                )
+                if success:
                     self.message_user(request, f"✅ {notif.user.username} ga yuborildi")
                 else:
-                    self.message_user(request, f"❌ {notif.user.username} ga yuborilmadi ({res.status_code})")
-            except FCMToken.DoesNotExist:
-                self.message_user(request, f"⚠️ {notif.user.username} uchun token topilmadi")
+                    self.message_user(request, f"⚠️ {notif.user.username} ga yuborishda xatolik")
+            except fcm_token.DoesNotExist:
+                self.message_user(request, f"❌ {notif.user.username} token topilmadi")
 
-    send_to_firebase.short_description = "Tanlangan xabarlarni Firebase orqali yuborish"
+    send_to_user.short_description = "Tanlangan xabarlarni Firebase orqali yuborish"
 
 
 class FeedbackAdmin(admin.ModelAdmin):
