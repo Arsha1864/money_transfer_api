@@ -9,7 +9,7 @@ from .utils import send_push_notification
 User = get_user_model()
 
 
-
+  
 
 
 @admin.register(CustomUser)
