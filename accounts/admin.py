@@ -65,19 +65,19 @@ class NotificationAdmin(admin.ModelAdmin):
 
     def send_to_user(self, request, queryset):
         for notif in queryset:
-            user = notif.user
-            if not user.fcm_token:
-                self.message_user(request, f"❌ {user.username} uchun FCM token topilmadi")
+            username = notif.user
+            if not username.fcm_token:
+                self.message_user(request, f"❌ {username.username} uchun FCM token topilmadi")
                 continue
 
             success = send_push_notification(
-                user.fcm_token, notif.title, notif.body, notif.image
+                username.fcm_token, notif.title, notif.body, notif.image
             )
 
             if success:
-                self.message_user(request, f"✅ {user.username} ga yuborildi")
+                self.message_user(request, f"✅ {username.username} ga yuborildi")
             else:
-                self.message_user(request, f"⚠️ {user.username} ga yuborishda xatolik")
+                self.message_user(request, f"⚠️ {username.username} ga yuborishda xatolik")
 
     send_to_user.short_description = "Tanlangan xabarlarni Firebase orqali yuborish"
 
