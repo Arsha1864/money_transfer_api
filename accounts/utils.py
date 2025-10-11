@@ -1,12 +1,24 @@
 import firebase_admin
 from firebase_admin import messaging, credentials
 from django.conf import settings
-import os
+import os, json
 
-# initialize faqat bir marta
+# Firebase init
 if not firebase_admin._apps:
-    cred = credentials.Certificate(os.path.join(settings.BASE_DIR, "serviceAccountKey.json"))
-    firebase_admin.initialize_app(cred)
+    try:
+        if os.path.exists(os.path.join(settings.BASE_DIR, "serviceAccountKey.json")):
+            cred = credentials.Certificate(os.path.join(settings.BASE_DIR, "serviceAccountKey.json"))
+        else:
+            firebase_json = os.getenv("FIREBASE_CONFIG")
+            if firebase_json:
+                cred = credentials.Certificate(json.loads(firebase_json))
+            else:
+                raise ValueError("❌ FIREBASE_CONFIG environment variable not found")
+
+        firebase_admin.initialize_app(cred)
+        print("✅ Firebase initialized successfully")
+    except Exception as e:
+        print("❌ Firebase initialization failed:", e)
 
 def send_push_notification(token, title, body, image=None):
     try:
