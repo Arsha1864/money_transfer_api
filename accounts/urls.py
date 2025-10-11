@@ -15,8 +15,7 @@ from .views import (
     ForgotPasswordView,
     SetOrUpdatePinView,
     ChangePasswordView,
-    NotificationListView,
-    MarkNotificationReadView,
+    
     EnterPinView,
     VerifyCardSmsView, 
     ResendCardSmsView,
@@ -24,7 +23,7 @@ from .views import (
     ChangePhoneView,
     ChangePinView,
    FeedbackListCreateView,
-   AdminCreateNotificationView,
+   
    
 )
 
