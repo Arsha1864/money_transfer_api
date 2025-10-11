@@ -179,4 +179,4 @@ CYCLES_BEFORE_FORCE_LOGIN = 2
 
 # settings.py
 FIREBASE_SERVICE_ACCOUNT_JSON = os.path.join(BASE_DIR, "serviceAccountKey.json")
-FIREBASE_PROJECT_ID = "arshaapp-9a14f"
+FIREBASE_PROJECT_ID = ""
