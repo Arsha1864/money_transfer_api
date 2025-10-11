@@ -147,7 +147,6 @@ INSTALLED_APPS = [
 
     # Your apps
     'accounts',
-    'notifications',
     'transactions',
     'payments',
     'card',
