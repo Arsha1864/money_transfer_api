@@ -60,7 +60,7 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ("user", "title", "created_at")
+    list_display = ("username", "title", "created_at")
     actions = ["send_to_user"]
 
     def send_to_user(self, request, queryset):
